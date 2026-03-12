@@ -470,7 +470,7 @@
             
             <div class="dashboard-grid">
                 <div class="metric-card">
-                    <div class="metric-label">Overall Risk Score</div>
+                    <div class="metric-label">Overall Maturity Score (weighted)</div>
                     <div class="metric-value" id="overallScore">-</div>
                 </div>
                 
@@ -493,11 +493,7 @@
             <div class="button-group">
                 <button class="btn btn-primary" id="exportBtn">📊 Export CSV</button>
                 <button class="btn btn-primary" id="saveBtn">💾 Save Assessment</button>
-                <button class="btn btn-secondary" id="emailBtn">📧 Send Results to Administrator</button>
             </div>
-
-            <!-- Email status message -->
-            <div id="emailStatus" style="display:none; text-align:center; margin-top:20px; padding:15px; border-radius:8px; font-weight:600;"></div>
         </div>
 
         <!-- COMPARISON TAB -->
@@ -520,16 +516,46 @@
 
         // Sample questions (will expand to 40)
         const questions = [
-            {id: 1, cat: "Governance & Accountability", q: "Does your organization have a documented AI governance framework?", opts: ["No framework", "In development", "Basic framework", "Comprehensive", "Mature with reviews"]},
-            {id: 2, cat: "Governance & Accountability", q: "Is there executive-level oversight for AI systems?", opts: ["No oversight", "Informal", "Designated sponsor", "Committee", "Board-level"]},
-            {id: 3, cat: "Governance & Accountability", q: "Are AI ethics principles formally established?", opts: ["No guidelines", "Informal", "Documented", "Integrated", "Review board"]},
-            {id: 4, cat: "Governance & Accountability", q: "Do you maintain an AI system inventory?", opts: ["No inventory", "Partial tracking", "Basic inventory", "Comprehensive", "Dynamic automated"]},
-            {id: 5, cat: "Governance & Accountability", q: "Are third-party AI vendors assessed?", opts: ["No assessment", "Basic contracts", "Questionnaires", "Risk assessments", "Continuous monitoring"]},
-            {id: 6, cat: "Data Quality & Management", q: "How mature are your data quality processes?", opts: ["No processes", "Ad-hoc checks", "Basic validation", "Comprehensive", "Automated monitoring"]},
-            {id: 7, cat: "Data Quality & Management", q: "Is data lineage tracked?", opts: ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
-            {id: 8, cat: "Data Quality & Management", q: "How do you address dataset biases?", opts: ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
-            {id: 9, cat: "Data Quality & Management", q: "Are data lifecycle policies defined?", opts: ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
-            {id: 10, cat: "Data Quality & Management", q: "Is synthetic data properly validated?", opts: ["Not used/No validation", "Basic validation", "Not applicable", "Rigorous validation", "Advanced with monitoring"]},
+            {"id": 1, "cat": "Governance & Accountability", "nist": "GV-1", "weight": 4, "q": "Does your organization have a documented AI governance framework?", "opts": ["No framework", "In development", "Basic framework", "Comprehensive", "Mature with reviews"]},
+            {"id": 2, "cat": "Governance & Accountability", "nist": "GV-2", "weight": 4, "q": "Is there executive-level oversight for AI systems?", "opts": ["No oversight", "Informal", "Designated sponsor", "Committee", "Board-level"]},
+            {"id": 3, "cat": "Governance & Accountability", "nist": "GV-3", "weight": 3, "q": "Are AI ethics principles formally established?", "opts": ["No guidelines", "Informal", "Documented", "Integrated", "Review board"]},
+            {"id": 4, "cat": "Governance & Accountability", "nist": "GV-4", "weight": 4, "q": "Do you maintain an AI system inventory (use cases, owners, data sources, vendors, model versions)?", "opts": ["No inventory", "Partial tracking", "Basic inventory", "Comprehensive", "Dynamic automated"]},
+            {"id": 5, "cat": "Governance & Accountability", "nist": "GV-5", "weight": 4, "q": "Are third-party AI vendors assessed (security, privacy, safety, compliance)?", "opts": ["No assessment", "Basic contracts", "Questionnaires", "Risk assessments", "Continuous monitoring"]},
+            {"id": 6, "cat": "Data Quality & Management", "nist": "MP-1", "weight": 3, "q": "How mature are your data quality processes (accuracy, completeness, timeliness)?", "opts": ["No processes", "Ad-hoc checks", "Basic validation", "Comprehensive", "Automated monitoring"]},
+            {"id": 7, "cat": "Data Quality & Management", "nist": "MP-2", "weight": 3, "q": "Is data lineage tracked (source → transformations → model inputs → outputs)?", "opts": ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
+            {"id": 8, "cat": "Data Quality & Management", "nist": "MP-3", "weight": 4, "q": "How do you assess and mitigate dataset bias (including protected classes and clinical subpopulations)?", "opts": ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
+            {"id": 9, "cat": "Data Quality & Management", "nist": "MP-4", "weight": 4, "q": "Are data lifecycle policies defined (retention, deletion, access, de-identification)?", "opts": ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
+            {"id": 10, "cat": "Data Quality & Management", "nist": "MP-5", "weight": 2, "q": "If you use synthetic data, is it validated for representativeness and privacy risk?", "opts": ["Not used / no validation", "Basic validation", "Some validation", "Rigorous validation", "Advanced w/ monitoring"]},
+            {"id": 11, "cat": "Governance & Accountability", "nist": "GV-6", "weight": 4, "q": "Are AI roles and responsibilities defined (owner, clinical sponsor, security/privacy, model steward, vendor manager)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 12, "cat": "Governance & Accountability", "nist": "GV-7", "weight": 5, "q": "Do you have an AI policy that explicitly prohibits PHI/PCI in non-approved tools and defines approved use cases?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 13, "cat": "Governance & Accountability", "nist": "GV-8", "weight": 4, "q": "Are AI risk acceptance and escalation criteria defined (e.g., patient safety impacts require clinical leadership sign-off)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 14, "cat": "Governance & Accountability", "nist": "GV-9", "weight": 4, "q": "Is there a formal change-management process for model updates (versioning, approvals, rollback)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 15, "cat": "Governance & Accountability", "nist": "GV-10", "weight": 3, "q": "Do you perform periodic audits of AI systems against governance requirements (and track remediation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 16, "cat": "Data Quality & Management", "nist": "MP-6", "weight": 3, "q": "Are training and evaluation datasets documented with 'datasheets' (provenance, limitations, labeling process, missingness)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 17, "cat": "Data Quality & Management", "nist": "MP-7", "weight": 4, "q": "Do you validate label quality and inter-rater reliability for clinically-derived labels?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 18, "cat": "Data Quality & Management", "nist": "MP-8", "weight": 5, "q": "Are de-identification/anonymization processes validated and re-identification risk assessed for AI datasets?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 19, "cat": "Data Quality & Management", "nist": "MP-9", "weight": 4, "q": "Is access to AI datasets restricted by least privilege, and are queries/logs monitored?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 20, "cat": "Data Quality & Management", "nist": "MP-10", "weight": 4, "q": "Are data drift and concept drift monitored for key clinical/operational variables used by the model?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 21, "cat": "Clinical Safety & Efficacy", "nist": "MP-11", "weight": 5, "q": "Is the intended clinical use clearly defined (patient population, setting, workflow, contraindications)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 22, "cat": "Clinical Safety & Efficacy", "nist": "MS-1", "weight": 5, "q": "Has the model been clinically validated for your setting (local validation / external evidence) before go-live?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 23, "cat": "Clinical Safety & Efficacy", "nist": "MS-2", "weight": 5, "q": "Are performance metrics clinically meaningful (e.g., sensitivity/specificity, PPV/NPV) and stratified by subpopulations?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 24, "cat": "Clinical Safety & Efficacy", "nist": "MS-3", "weight": 5, "q": "Do you have human-in-the-loop requirements (who reviews output, when, and what actions are allowed)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 25, "cat": "Clinical Safety & Efficacy", "nist": "MG-1", "weight": 5, "q": "Is there a documented 'failure modes' analysis for potential patient harm and workflow disruption (including automation bias)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 26, "cat": "Clinical Safety & Efficacy", "nist": "MG-2", "weight": 4, "q": "Are alert thresholds/tuning governed to reduce alarm fatigue and unintended clinical behavior?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 27, "cat": "Clinical Safety & Efficacy", "nist": "MG-3", "weight": 5, "q": "Do you have a process to suspend/disable the AI system if safety issues arise (kill switch) with clear communication steps?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 28, "cat": "Clinical Safety & Efficacy", "nist": "MG-4", "weight": 4, "q": "Are clinical users trained on limitations, appropriate use, and how to report issues?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 29, "cat": "Privacy, Security & Compliance", "nist": "GV-11", "weight": 5, "q": "Are HIPAA/Privacy and Security risk analyses performed for each AI use case (including data sharing and BAAs)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 30, "cat": "Privacy, Security & Compliance", "nist": "GV-12", "weight": 5, "q": "Are vendor contracts/BAAs explicit about data use (no secondary use/training without approval), retention, and breach notification?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 31, "cat": "Privacy, Security & Compliance", "nist": "MG-5", "weight": 4, "q": "Is encryption used for data in transit and at rest for AI pipelines and storage (including logs and backups)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 32, "cat": "Privacy, Security & Compliance", "nist": "MG-6", "weight": 4, "q": "Is model and API access protected (SSO/MFA, service principals, secrets management, network segmentation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 33, "cat": "Privacy, Security & Compliance", "nist": "MG-7", "weight": 4, "q": "Do you assess and mitigate AI security threats (prompt injection, data exfiltration, model inversion, poisoning) appropriate to the use case?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 34, "cat": "Privacy, Security & Compliance", "nist": "MG-8", "weight": 5, "q": "Are outputs and logs reviewed to prevent PHI leakage (e.g., model responses containing PHI or training data echoes)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 35, "cat": "Transparency & Human Oversight", "nist": "MP-12", "weight": 4, "q": "Are users informed when AI is used and what it does (including limitations and confidence indicators where applicable)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 36, "cat": "Transparency & Human Oversight", "nist": "MS-4", "weight": 4, "q": "Can you explain model outputs at an appropriate level for the audience (clinicians vs. admins) and document rationale?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 37, "cat": "Transparency & Human Oversight", "nist": "GV-13", "weight": 4, "q": "Are documentation artifacts maintained (model cards, intended use, known limitations, evaluation results, update history)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 38, "cat": "Transparency & Human Oversight", "nist": "MG-9", "weight": 4, "q": "Is there a feedback loop for users to contest/override AI outputs and for teams to investigate/adjust?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 39, "cat": "Monitoring & Incident Response", "nist": "MS-5", "weight": 5, "q": "Do you continuously monitor model performance, drift, and incidents post-deployment with defined KPIs and thresholds?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 40, "cat": "Monitoring & Incident Response", "nist": "MG-10", "weight": 5, "q": "Is there an AI-specific incident response playbook (clinical escalation, privacy/security IR, vendor coordination, communications)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]}
         ];
 
         // Tab switching
@@ -574,36 +600,45 @@
         });
 
         // Generate questions
+
+        // Generate questions
         function generateQuestions() {
             console.log('Generating questions...');
             const container = document.getElementById('assessmentQuestions');
             container.innerHTML = '';
-            
+
             const categories = [...new Set(questions.map(q => q.cat))];
-            
+
             categories.forEach(cat => {
                 const catQuestions = questions.filter(q => q.cat === cat);
-                
+
                 const section = document.createElement('div');
                 section.className = 'category-section';
-                
+
                 const header = document.createElement('div');
                 header.className = 'category-header';
                 header.textContent = cat;
                 section.appendChild(header);
-                
+
                 catQuestions.forEach(q => {
                     const block = document.createElement('div');
                     block.className = 'question-block';
-                    
+
+                    const meta = [];
+                    if (q.nist) meta.push(`NIST: ${q.nist}`);
+                    if (q.weight) meta.push(`Weight: ${q.weight}`);
+
                     let html = `
                         <div class="question-text">
                             <span class="question-number">${q.id}</span>
                             ${q.q}
                         </div>
+                        <div style="margin-top: -5px; margin-bottom: 12px; color: var(--gray-dark); font-size: 0.9em;">
+                            ${meta.join(' • ')}
+                        </div>
                         <div class="radio-group">
                     `;
-                    
+
                     q.opts.forEach((opt, i) => {
                         html += `
                             <div class="radio-option">
@@ -612,20 +647,23 @@
                             </div>
                         `;
                     });
-                    
+
                     html += '</div>';
                     block.innerHTML = html;
                     section.appendChild(block);
                 });
-                
+
                 container.appendChild(section);
             });
-            
+
             // Add change listeners
             document.querySelectorAll('input[type="radio"]').forEach(radio => {
                 radio.addEventListener('change', updateProgress);
             });
+
+            updateProgress();
         }
+
 
         // Update progress
         function updateProgress() {
@@ -636,64 +674,83 @@
             document.getElementById('progressBar').textContent = pct + '%';
         }
 
-        // Calculate results
+        
+        // Calculate results (weighted)
         document.getElementById('calculateBtn').addEventListener('click', function() {
             console.log('Calculate clicked');
-            
-            const answers = document.querySelectorAll('input[type="radio"]:checked');
-            if (answers.length === 0) {
+
+            // Weighted maturity score: higher = better (lower residual risk)
+            let weightedSum = 0;
+            let weightTotal = 0;
+            let answeredCount = 0;
+
+            questions.forEach(q => {
+                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                if (checked) {
+                    const v = parseInt(checked.value);
+                    const w = parseFloat(q.weight || 1);
+                    weightedSum += v * w;
+                    weightTotal += w;
+                    answeredCount++;
+                }
+            });
+
+            if (answeredCount === 0) {
                 alert('Please answer at least one question');
                 return;
             }
-            
-            let total = 0;
-            answers.forEach(a => total += parseInt(a.value));
-            const avg = total / answers.length;
-            
+
+            const avg = weightedSum / weightTotal;
+
             document.getElementById('overallScore').textContent = avg.toFixed(2);
-            
+
             const level = avg >= 4.5 ? 'Minimal Risk' :
                          avg >= 3.5 ? 'Low Risk' :
                          avg >= 2.5 ? 'Medium Risk' :
                          avg >= 1.5 ? 'High Risk' : 'Critical Risk';
-            
+
             const color = avg >= 4.5 ? '#90EE90' :
                          avg >= 3.5 ? '#FFD700' :
                          avg >= 2.5 ? '#FF8C00' :
                          avg >= 1.5 ? '#DC143C' : '#8B0000';
-            
+
             document.getElementById('riskLevel').textContent = level;
             document.getElementById('riskLevel').style.color = color;
-            
+
             generateHeatmap();
             generateRecs(avg);
-            
+
             switchToTab('results');
         });
 
-        // Generate heatmap
+
+        
+        // Generate heatmap (weighted by question weight)
         function generateHeatmap() {
             const container = document.getElementById('heatmapGrid');
             container.innerHTML = '';
-            
+
             const categories = [...new Set(questions.map(q => q.cat))];
-            
+
             categories.forEach(cat => {
                 const catQs = questions.filter(q => q.cat === cat);
-                let sum = 0, count = 0;
-                
+                let wSum = 0, wTotal = 0;
+
                 catQs.forEach(q => {
                     const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
                     if (checked) {
-                        sum += parseInt(checked.value);
-                        count++;
+                        const v = parseInt(checked.value);
+                        const w = parseFloat(q.weight || 1);
+                        wSum += v * w;
+                        wTotal += w;
                     }
                 });
-                
-                const avg = count > 0 ? sum / count : 0;
+
+                const avg = wTotal > 0 ? (wSum / wTotal) : 0;
+
                 const color = avg >= 4 ? '#90EE90' : avg >= 3 ? '#FFD700' : avg >= 2 ? '#FF8C00' : '#DC143C';
                 const textColor = avg < 2.5 ? 'white' : '#003B5C';
-                
+
                 const item = document.createElement('div');
                 item.className = 'heatmap-item';
                 item.style.backgroundColor = color;
@@ -707,6 +764,7 @@
         }
 
         // Generate recommendations
+
         function generateRecs(score) {
             const container = document.getElementById('recommendationsList');
             container.innerHTML = '';
@@ -752,138 +810,44 @@
             });
         }
 
+        
         // Export CSV
         document.getElementById('exportBtn').addEventListener('click', function() {
-            let csv = 'Midland Health AI Assessment\n\n';
-            csv += 'Question,Answer,Score\n';
-            
+            let csv = 'Midland Health AI Assessment (Weighted)\n\n';
+            csv += 'Category,NIST_Tag,Question,Answer,MaturityScore(1-5),Weight,WeightedScore,ResidualRisk(5-1)\n';
+
+            const esc = (s) => String(s ?? '').replace(/"/g, '""');
+
             questions.forEach(q => {
                 const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
-                if (checked) {
-                    const idx = parseInt(checked.value) - 1;
-                    csv += `"${q.q}","${q.opts[idx]}",${checked.value}\n`;
-                }
+                if (!checked) return;
+
+                const v = parseInt(checked.value, 10);
+                const idx = v - 1;
+                const w = parseFloat(q.weight || 1);
+                const weighted = (v * w).toFixed(2);
+                const residual = (6 - v); // 5 (worst) -> 1 (best)
+                const answerText = (q.opts && q.opts[idx]) ? q.opts[idx] : '';
+
+                csv += `"${esc(q.cat)}","${esc(q.nist || '')}","${esc(q.q)}","${esc(answerText)}",${v},${w},${weighted},${residual}\n`;
             });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'midland_ai_assessment.csv';
+            a.download = 'midland_ai_assessment_weighted.csv';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
 
-        // Save
+
+// Save
         document.getElementById('saveBtn').addEventListener('click', function() {
             alert('Assessment saved to browser storage!');
         });
-
-        // ─── EMAIL RESULTS VIA FORMSPREE ───────────────────────────────────────
-        // SETUP: Replace YOUR_FORMSPREE_ID below with your actual Formspree form ID.
-        // Steps: 1) Go to https://formspree.io  2) Sign up free  3) Create a new form
-        //        4) Copy the form ID (e.g. "xpznkdqw") and paste it below.
-        const FORMSPREE_ID = 'YOUR_FORMSPREE_ID';
-
-        document.getElementById('emailBtn').addEventListener('click', async function() {
-            const statusEl = document.getElementById('emailStatus');
-
-            // Collect org info
-            const orgName      = document.getElementById('orgName').value || '(not provided)';
-            const industry     = document.getElementById('industry').value || '(not provided)';
-            const orgSize      = document.getElementById('orgSize').value || '(not provided)';
-            const assessDate   = document.getElementById('assessmentDate').value || '(not provided)';
-            const assessorName = document.getElementById('assessorName').value || '(not provided)';
-            const assessorEmail= document.getElementById('assessorEmail').value || '(not provided)';
-            const overallScore = document.getElementById('overallScore').textContent;
-            const riskLevel    = document.getElementById('riskLevel').textContent;
-
-            // Build detailed question/answer breakdown
-            let breakdown = '';
-            questions.forEach(q => {
-                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
-                if (checked) {
-                    const idx = parseInt(checked.value) - 1;
-                    breakdown += `Q${q.id} [${q.cat}]: ${q.q}\n  → ${q.opts[idx]} (Score: ${checked.value}/5)\n\n`;
-                }
-            });
-
-            // Build category averages
-            const categories = [...new Set(questions.map(q => q.cat))];
-            let catSummary = '';
-            categories.forEach(cat => {
-                const catQs = questions.filter(q => q.cat === cat);
-                let sum = 0, count = 0;
-                catQs.forEach(q => {
-                    const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
-                    if (checked) { sum += parseInt(checked.value); count++; }
-                });
-                if (count > 0) catSummary += `${cat}: ${(sum/count).toFixed(2)}/5\n`;
-            });
-
-            const messageBody = `
-MIDLAND HEALTH — AI RISK ASSESSMENT RESULTS
-============================================
-
-ORGANIZATION DETAILS
-Organization: ${orgName}
-Industry: ${industry}
-Size: ${orgSize}
-Assessment Date: ${assessDate}
-Assessor: ${assessorName}
-Assessor Email: ${assessorEmail}
-
-OVERALL RESULTS
-Overall Score: ${overallScore} / 5.00
-Risk Level: ${riskLevel}
-
-CATEGORY SCORES
-${catSummary}
-DETAILED QUESTION BREAKDOWN
-${breakdown}
-            `.trim();
-
-            // Show loading state
-            this.disabled = true;
-            this.textContent = '⏳ Sending...';
-            statusEl.style.display = 'none';
-
-            try {
-                const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        _subject: `AI Risk Assessment – ${orgName} – ${riskLevel}`,
-                        organization: orgName,
-                        assessor: assessorName,
-                        assessorEmail: assessorEmail,
-                        overallScore: overallScore,
-                        riskLevel: riskLevel,
-                        message: messageBody
-                    })
-                });
-
-                if (response.ok) {
-                    statusEl.style.display = 'block';
-                    statusEl.style.background = '#d4edda';
-                    statusEl.style.color = '#155724';
-                    statusEl.textContent = '✅ Results successfully sent to the administrator!';
-                    this.textContent = '✅ Sent!';
-                } else {
-                    throw new Error('Formspree returned an error');
-                }
-            } catch (err) {
-                statusEl.style.display = 'block';
-                statusEl.style.background = '#f8d7da';
-                statusEl.style.color = '#721c24';
-                statusEl.textContent = '❌ Failed to send. Please check your Formspree setup or try again.';
-                this.disabled = false;
-                this.textContent = '📧 Send Results to Administrator';
-                console.error(err);
-            }
-        });
-        // ───────────────────────────────────────────────────────────────────────
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
