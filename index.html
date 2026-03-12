@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midland Health - AI Risk Assessment Tool</title>
+    <style>
+        :root {
+            --primary-yellow: #FFB81C;
+            --primary-blue: #003B5C;
+            --light-yellow: #FFF4D6;
+            --light-blue: #E6F2F8;
+            --dark-blue: #002A42;
+            --white: #FFFFFF;
+            --gray-light: #F5F5F5;
+            --gray-medium: #CCCCCC;
+            --gray-dark: #666666;
+            --risk-critical: #8B0000;
+            --risk-high: #DC143C;
+            --risk-medium: #FF8C00;
+            --risk-low: #FFD700;
+            --risk-minimal: #90EE90;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-blue) 0%, var(--light-yellow) 100%);
+            color: var(--primary-blue);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 59, 92, 0.15);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: var(--white);
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .logo-text {
+            color: var(--primary-yellow);
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--gray-light);
+            border-bottom: 3px solid var(--primary-yellow);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--gray-light);
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--gray-dark);
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: var(--light-blue);
+        }
+
+        .tab.active {
+            background: var(--white);
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-yellow);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .client-info {
+            background: var(--light-yellow);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary-yellow);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-blue);
+        }
+
+        input, select, textarea {
+            padding: 12px;
+            border: 2px solid var(--gray-medium);
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-yellow);
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary-yellow);
+            color: var(--primary-blue);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-secondary {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--dark-blue);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+            border: 2px solid var(--light-blue);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            color: var(--white);
+            padding: 20px 25px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .question-block {
+            padding: 25px;
+            border-bottom: 1px solid var(--gray-light);
+        }
+
+        .question-block:last-child {
+            border-bottom: none;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+            font-size: 1.05em;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: var(--primary-yellow);
+            color: var(--primary-blue);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 10px 15px;
+            border: 2px solid var(--gray-medium);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: var(--primary-blue);
+            color: var(--white);
+            border-color: var(--primary-blue);
+        }
+
+        .radio-option label:hover {
+            border-color: var(--primary-yellow);
+            background: var(--light-yellow);
+        }
+
+        .progress-bar {
+            background: var(--gray-light);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-yellow) 0%, var(--primary-blue) 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: bold;
+        }
+
+        h2 {
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid var(--primary-yellow);
+            padding-bottom: 10px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary-yellow);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: var(--gray-dark);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .heatmap-item {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .heatmap-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .recommendation-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid;
+            border-radius: 5px;
+            background: var(--gray-light);
+        }
+
+        .recommendation-item.critical {
+            border-color: var(--risk-critical);
+            background: #FFF5F5;
+        }
+
+        .recommendation-item.high {
+            border-color: var(--risk-high);
+            background: #FFF9F9;
+        }
+
+        .recommendation-item.medium {
+            border-color: var(--risk-medium);
+            background: #FFFBF5;
+        }
+
+        .recommendation-item.low {
+            border-color: var(--risk-low);
+            background: var(--light-yellow);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="logo-text">Midland Health</span> AI Risk Assessment</h1>
+            <p class="subtitle">Comprehensive AI Governance & Risk Evaluation Tool</p>
+            <p class="subtitle" style="font-size: 0.9em; margin-top: 10px;">Based on NIST AI RMF & ISACA Standards</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="client-info">Client Information</button>
+            <button class="tab" data-tab="assessment">Assessment</button>
+            <button class="tab" data-tab="results">Results Dashboard</button>
+            <button class="tab" data-tab="comparison">Historical Comparison</button>
+        </div>
+
+        <!-- CLIENT INFORMATION TAB -->
+        <div id="client-info" class="tab-content active">
+            <h2>Client Information</h2>
+            <div class="client-info">
+                <p style="margin-bottom: 15px; color: var(--gray-dark);">
+                    Please provide the following information about your organization before beginning the AI risk assessment.
+                </p>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="orgName">Organization Name *</label>
+                        <input type="text" id="orgName" placeholder="Enter organization name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="industry">Industry Sector *</label>
+                        <select id="industry">
+                            <option value="">Select Industry</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="financial">Financial Services</option>
+                            <option value="technology">Technology</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="retail">Retail</option>
+                            <option value="education">Education</option>
+                            <option value="government">Government</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orgSize">Organization Size *</label>
+                        <select id="orgSize">
+                            <option value="">Select Size</option>
+                            <option value="small">Small (1-50 employees)</option>
+                            <option value="medium">Medium (51-250 employees)</option>
+                            <option value="large">Large (251-1000 employees)</option>
+                            <option value="enterprise">Enterprise (1000+ employees)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assessmentDate">Assessment Date *</label>
+                        <input type="date" id="assessmentDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assessorName">Assessor Name *</label>
+                        <input type="text" id="assessorName" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assessorEmail">Assessor Email</label>
+                        <input type="email" id="assessorEmail" placeholder="assessor@example.com">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn btn-primary" id="beginAssessmentBtn">Begin Assessment →</button>
+            </div>
+        </div>
+
+        <!-- ASSESSMENT TAB -->
+        <div id="assessment" class="tab-content">
+            <h2>AI Risk Assessment Questionnaire</h2>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%;">0%</div>
+            </div>
+            
+            <p style="margin-bottom: 30px; color: var(--gray-dark); font-size: 1.05em;">
+                Please answer all questions based on your organization's current AI practices and capabilities.
+            </p>
+
+            <div id="assessmentQuestions"></div>
+            
+            <div class="button-group">
+                <button class="btn btn-secondary" data-tab="client-info">← Back</button>
+                <button class="btn btn-primary" id="calculateBtn">Calculate Results →</button>
+            </div>
+        </div>
+
+        <!-- RESULTS TAB -->
+        <div id="results" class="tab-content">
+            <h2>Assessment Results Dashboard</h2>
+            
+            <div class="dashboard-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Overall Risk Score</div>
+                    <div class="metric-value" id="overallScore">-</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Risk Level</div>
+                    <div class="metric-value" id="riskLevel" style="font-size: 1.8em;">-</div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+                <h2>Category Risk Heat Map</h2>
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+            </div>
+
+            <div style="background: white; padding: 30px; border-radius: 10px; margin-bottom: 30px;">
+                <h2>Actionable Recommendations</h2>
+                <div id="recommendationsList"></div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="exportBtn">📊 Export CSV</button>
+                <button class="btn btn-primary" id="saveBtn">💾 Save Assessment</button>
+                <button class="btn btn-secondary" id="emailBtn">📧 Send Results to Administrator</button>
+            </div>
+
+            <!-- Email status message -->
+            <div id="emailStatus" style="display:none; text-align:center; margin-top:20px; padding:15px; border-radius:8px; font-weight:600;"></div>
+        </div>
+
+        <!-- COMPARISON TAB -->
+        <div id="comparison" class="tab-content">
+            <h2>Historical Comparison</h2>
+            
+            <div style="background: white; padding: 30px; border-radius: 10px;">
+                <h3 style="margin-bottom: 20px;">Assessment History</h3>
+                <div id="assessmentHistory">
+                    <p style="text-align: center; padding: 40px; color: var(--gray-dark);">
+                        No previous assessments found.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Script starting...');
+
+        // Sample questions (will expand to 40)
+        const questions = [
+            {id: 1, cat: "Governance & Accountability", q: "Does your organization have a documented AI governance framework?", opts: ["No framework", "In development", "Basic framework", "Comprehensive", "Mature with reviews"]},
+            {id: 2, cat: "Governance & Accountability", q: "Is there executive-level oversight for AI systems?", opts: ["No oversight", "Informal", "Designated sponsor", "Committee", "Board-level"]},
+            {id: 3, cat: "Governance & Accountability", q: "Are AI ethics principles formally established?", opts: ["No guidelines", "Informal", "Documented", "Integrated", "Review board"]},
+            {id: 4, cat: "Governance & Accountability", q: "Do you maintain an AI system inventory?", opts: ["No inventory", "Partial tracking", "Basic inventory", "Comprehensive", "Dynamic automated"]},
+            {id: 5, cat: "Governance & Accountability", q: "Are third-party AI vendors assessed?", opts: ["No assessment", "Basic contracts", "Questionnaires", "Risk assessments", "Continuous monitoring"]},
+            {id: 6, cat: "Data Quality & Management", q: "How mature are your data quality processes?", opts: ["No processes", "Ad-hoc checks", "Basic validation", "Comprehensive", "Automated monitoring"]},
+            {id: 7, cat: "Data Quality & Management", q: "Is data lineage tracked?", opts: ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
+            {id: 8, cat: "Data Quality & Management", q: "How do you address dataset biases?", opts: ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
+            {id: 9, cat: "Data Quality & Management", q: "Are data lifecycle policies defined?", opts: ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
+            {id: 10, cat: "Data Quality & Management", q: "Is synthetic data properly validated?", opts: ["Not used/No validation", "Basic validation", "Not applicable", "Rigorous validation", "Advanced with monitoring"]},
+        ];
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetTab = this.getAttribute('data-tab');
+                console.log('Tab clicked:', targetTab);
+                switchToTab(targetTab);
+            });
+        });
+
+        function switchToTab(tabName) {
+            console.log('Switching to:', tabName);
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        }
+
+        // Begin Assessment
+        document.getElementById('beginAssessmentBtn').addEventListener('click', function() {
+            console.log('Begin button clicked!');
+            
+            const orgName = document.getElementById('orgName').value;
+            const industry = document.getElementById('industry').value;
+            const orgSize = document.getElementById('orgSize').value;
+            const assessmentDate = document.getElementById('assessmentDate').value;
+            const assessorName = document.getElementById('assessorName').value;
+            
+            if (!orgName || !industry || !orgSize || !assessmentDate || !assessorName) {
+                alert('Please fill in all required fields marked with *');
+                return;
+            }
+            
+            generateQuestions();
+            switchToTab('assessment');
+        });
+
+        // Generate questions
+        function generateQuestions() {
+            console.log('Generating questions...');
+            const container = document.getElementById('assessmentQuestions');
+            container.innerHTML = '';
+            
+            const categories = [...new Set(questions.map(q => q.cat))];
+            
+            categories.forEach(cat => {
+                const catQuestions = questions.filter(q => q.cat === cat);
+                
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = cat;
+                section.appendChild(header);
+                
+                catQuestions.forEach(q => {
+                    const block = document.createElement('div');
+                    block.className = 'question-block';
+                    
+                    let html = `
+                        <div class="question-text">
+                            <span class="question-number">${q.id}</span>
+                            ${q.q}
+                        </div>
+                        <div class="radio-group">
+                    `;
+                    
+                    q.opts.forEach((opt, i) => {
+                        html += `
+                            <div class="radio-option">
+                                <input type="radio" id="q${q.id}_${i}" name="q${q.id}" value="${i+1}">
+                                <label for="q${q.id}_${i}">${opt}</label>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    block.innerHTML = html;
+                    section.appendChild(block);
+                });
+                
+                container.appendChild(section);
+            });
+            
+            // Add change listeners
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', updateProgress);
+            });
+        }
+
+        // Update progress
+        function updateProgress() {
+            const total = questions.length;
+            const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+            const pct = Math.round((answered / total) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('progressBar').textContent = pct + '%';
+        }
+
+        // Calculate results
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            console.log('Calculate clicked');
+            
+            const answers = document.querySelectorAll('input[type="radio"]:checked');
+            if (answers.length === 0) {
+                alert('Please answer at least one question');
+                return;
+            }
+            
+            let total = 0;
+            answers.forEach(a => total += parseInt(a.value));
+            const avg = total / answers.length;
+            
+            document.getElementById('overallScore').textContent = avg.toFixed(2);
+            
+            const level = avg >= 4.5 ? 'Minimal Risk' :
+                         avg >= 3.5 ? 'Low Risk' :
+                         avg >= 2.5 ? 'Medium Risk' :
+                         avg >= 1.5 ? 'High Risk' : 'Critical Risk';
+            
+            const color = avg >= 4.5 ? '#90EE90' :
+                         avg >= 3.5 ? '#FFD700' :
+                         avg >= 2.5 ? '#FF8C00' :
+                         avg >= 1.5 ? '#DC143C' : '#8B0000';
+            
+            document.getElementById('riskLevel').textContent = level;
+            document.getElementById('riskLevel').style.color = color;
+            
+            generateHeatmap();
+            generateRecs(avg);
+            
+            switchToTab('results');
+        });
+
+        // Generate heatmap
+        function generateHeatmap() {
+            const container = document.getElementById('heatmapGrid');
+            container.innerHTML = '';
+            
+            const categories = [...new Set(questions.map(q => q.cat))];
+            
+            categories.forEach(cat => {
+                const catQs = questions.filter(q => q.cat === cat);
+                let sum = 0, count = 0;
+                
+                catQs.forEach(q => {
+                    const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                    if (checked) {
+                        sum += parseInt(checked.value);
+                        count++;
+                    }
+                });
+                
+                const avg = count > 0 ? sum / count : 0;
+                const color = avg >= 4 ? '#90EE90' : avg >= 3 ? '#FFD700' : avg >= 2 ? '#FF8C00' : '#DC143C';
+                const textColor = avg < 2.5 ? 'white' : '#003B5C';
+                
+                const item = document.createElement('div');
+                item.className = 'heatmap-item';
+                item.style.backgroundColor = color;
+                item.style.color = textColor;
+                item.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 10px; font-size: 1.1em;">${cat}</div>
+                    <div style="font-size: 2em; font-weight: bold;">${avg.toFixed(1)}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Generate recommendations
+        function generateRecs(score) {
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = '';
+            
+            const recs = [];
+            
+            if (score < 2.5) {
+                recs.push({
+                    priority: 'critical',
+                    title: 'Critical AI Governance Intervention Required',
+                    text: 'Your organization has significant AI risk exposure. Immediate executive attention and investment in AI governance infrastructure is required.'
+                });
+            } else if (score < 3.5) {
+                recs.push({
+                    priority: 'high',
+                    title: 'Significant AI Governance Improvements Needed',
+                    text: 'Your AI risk management program has substantial gaps that require focused attention and resources.'
+                });
+            } else if (score < 4.5) {
+                recs.push({
+                    priority: 'medium',
+                    title: 'Continue AI Governance Maturity Journey',
+                    text: 'You have established foundational AI governance practices. Focus on strengthening specific areas.'
+                });
+            } else {
+                recs.push({
+                    priority: 'low',
+                    title: 'Maintain AI Governance Excellence',
+                    text: 'Your AI governance practices demonstrate maturity. Continue to maintain and incrementally improve.'
+                });
+            }
+            
+            recs.forEach(rec => {
+                const item = document.createElement('div');
+                item.className = `recommendation-item ${rec.priority}`;
+                item.innerHTML = `
+                    <div style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px; color: var(--primary-blue);">
+                        ${rec.title}
+                    </div>
+                    <div style="color: var(--gray-dark);">${rec.text}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Export CSV
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            let csv = 'Midland Health AI Assessment\n\n';
+            csv += 'Question,Answer,Score\n';
+            
+            questions.forEach(q => {
+                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                if (checked) {
+                    const idx = parseInt(checked.value) - 1;
+                    csv += `"${q.q}","${q.opts[idx]}",${checked.value}\n`;
+                }
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'midland_ai_assessment.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        // Save
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            alert('Assessment saved to browser storage!');
+        });
+
+        // ─── EMAIL RESULTS VIA FORMSPREE ───────────────────────────────────────
+        // SETUP: Replace YOUR_FORMSPREE_ID below with your actual Formspree form ID.
+        // Steps: 1) Go to https://formspree.io  2) Sign up free  3) Create a new form
+        //        4) Copy the form ID (e.g. "xpznkdqw") and paste it below.
+        const FORMSPREE_ID = 'YOUR_FORMSPREE_ID';
+
+        document.getElementById('emailBtn').addEventListener('click', async function() {
+            const statusEl = document.getElementById('emailStatus');
+
+            // Collect org info
+            const orgName      = document.getElementById('orgName').value || '(not provided)';
+            const industry     = document.getElementById('industry').value || '(not provided)';
+            const orgSize      = document.getElementById('orgSize').value || '(not provided)';
+            const assessDate   = document.getElementById('assessmentDate').value || '(not provided)';
+            const assessorName = document.getElementById('assessorName').value || '(not provided)';
+            const assessorEmail= document.getElementById('assessorEmail').value || '(not provided)';
+            const overallScore = document.getElementById('overallScore').textContent;
+            const riskLevel    = document.getElementById('riskLevel').textContent;
+
+            // Build detailed question/answer breakdown
+            let breakdown = '';
+            questions.forEach(q => {
+                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                if (checked) {
+                    const idx = parseInt(checked.value) - 1;
+                    breakdown += `Q${q.id} [${q.cat}]: ${q.q}\n  → ${q.opts[idx]} (Score: ${checked.value}/5)\n\n`;
+                }
+            });
+
+            // Build category averages
+            const categories = [...new Set(questions.map(q => q.cat))];
+            let catSummary = '';
+            categories.forEach(cat => {
+                const catQs = questions.filter(q => q.cat === cat);
+                let sum = 0, count = 0;
+                catQs.forEach(q => {
+                    const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                    if (checked) { sum += parseInt(checked.value); count++; }
+                });
+                if (count > 0) catSummary += `${cat}: ${(sum/count).toFixed(2)}/5\n`;
+            });
+
+            const messageBody = `
+MIDLAND HEALTH — AI RISK ASSESSMENT RESULTS
+============================================
+
+ORGANIZATION DETAILS
+Organization: ${orgName}
+Industry: ${industry}
+Size: ${orgSize}
+Assessment Date: ${assessDate}
+Assessor: ${assessorName}
+Assessor Email: ${assessorEmail}
+
+OVERALL RESULTS
+Overall Score: ${overallScore} / 5.00
+Risk Level: ${riskLevel}
+
+CATEGORY SCORES
+${catSummary}
+DETAILED QUESTION BREAKDOWN
+${breakdown}
+            `.trim();
+
+            // Show loading state
+            this.disabled = true;
+            this.textContent = '⏳ Sending...';
+            statusEl.style.display = 'none';
+
+            try {
+                const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        _subject: `AI Risk Assessment – ${orgName} – ${riskLevel}`,
+                        organization: orgName,
+                        assessor: assessorName,
+                        assessorEmail: assessorEmail,
+                        overallScore: overallScore,
+                        riskLevel: riskLevel,
+                        message: messageBody
+                    })
+                });
+
+                if (response.ok) {
+                    statusEl.style.display = 'block';
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.textContent = '✅ Results successfully sent to the administrator!';
+                    this.textContent = '✅ Sent!';
+                } else {
+                    throw new Error('Formspree returned an error');
+                }
+            } catch (err) {
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.textContent = '❌ Failed to send. Please check your Formspree setup or try again.';
+                this.disabled = false;
+                this.textContent = '📧 Send Results to Administrator';
+                console.error(err);
+            }
+        });
+        // ───────────────────────────────────────────────────────────────────────
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('assessmentDate').valueAsDate = new Date();
+            console.log('✅ Page loaded successfully');
+        });
+    </script>
+</body>
+</html>
