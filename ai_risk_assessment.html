@@ -528,7 +528,7 @@
             {"id": 7, "cat": "Data Quality & Management", "nist": "MP-2", "weight": 3, "q": "Is data lineage tracked (source → transformations → model inputs → outputs)?", "opts": ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
             {"id": 8, "cat": "Data Quality & Management", "nist": "MP-3", "weight": 4, "q": "How do you assess and mitigate dataset bias (including protected classes and clinical subpopulations)?", "opts": ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
             {"id": 9, "cat": "Data Quality & Management", "nist": "MP-4", "weight": 4, "q": "Are data lifecycle policies defined (retention, deletion, access, de-identification)?", "opts": ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
-            {"id": 10, "cat": "Data Quality & Management", "nist": "MP-5", "weight": 2, "q": "If you use synthetic data, is it validated for representativeness and privacy risk?", "opts": ["Used but not validated", "N/A — synthetic data not used", "Basic validation", "Rigorous validation", "Advanced w/ monitoring"], "naOption": 2},
+            {"id": 10, "cat": "Data Quality & Management", "nist": "MP-5", "weight": 2, "q": "If you use synthetic data, is it validated for representativeness and privacy risk?", "opts": ["N/A — synthetic data not used", "Used but not validated", "Basic validation", "Rigorous validation", "Advanced w/ monitoring"], "naOption": 1, "zeroWeight": 1},
             {"id": 11, "cat": "Governance & Accountability", "nist": "GV-6", "weight": 4, "q": "Are AI roles and responsibilities defined (owner, clinical sponsor, security/privacy, model steward, vendor manager)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
             {"id": 12, "cat": "Governance & Accountability", "nist": "GV-7", "weight": 5, "q": "Do you have an AI policy that explicitly prohibits PHI/PCI in non-approved tools and defines approved use cases?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
             {"id": 13, "cat": "Governance & Accountability", "nist": "GV-8", "weight": 4, "q": "Are AI risk acceptance and escalation criteria defined (e.g., patient safety impacts require clinical leadership sign-off)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
@@ -837,7 +837,7 @@
 
                 // Skip N/A options - excluded from scoring
                 if (q.naOption && v === parseInt(q.naOption)) {
-                    csv += `"${esc(q.cat)}","${esc(q.nist || '')}","${esc(q.q)}","${esc(answerText)}",N/A,N/A,N/A,N/A\n`;
+                    csv += `"${esc(q.cat)}","${esc(q.nist || '')}","${esc(q.q)}","${esc(answerText)}",0,0,0,0\n`;
                     return;
                 }
 
@@ -882,7 +882,7 @@
                 if (checked) {
                     const v = parseInt(checked.value);
                     const idx = v - 1;
-                    const scoreLabel = (q.naOption && v === parseInt(q.naOption)) ? 'N/A' : `${v}/5`;
+                    const scoreLabel = (q.naOption && v === parseInt(q.naOption)) ? '0 (N/A - no synthetic data)' : `${v}/5`;
                     breakdown += `Q${q.id} [${q.cat}]: ${q.q}
   → ${q.opts[idx]} (Score: ${scoreLabel})
 
