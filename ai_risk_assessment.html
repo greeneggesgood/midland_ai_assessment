@@ -1,3 +1,4 @@
+<!-- VERSION 2.1 - Questions reordered, Q18 synthetic data fix -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -519,44 +520,50 @@
 
         // Sample questions (will expand to 40)
         const questions = [
+            // Governance & Accountability (1-13)
             {"id": 1, "cat": "Governance & Accountability", "nist": "GV-1", "weight": 4, "q": "Does your organization have a documented AI governance framework?", "opts": ["No framework", "In development", "Basic framework", "Comprehensive", "Mature with reviews"]},
             {"id": 2, "cat": "Governance & Accountability", "nist": "GV-2", "weight": 4, "q": "Is there executive-level oversight for AI systems?", "opts": ["No oversight", "Informal", "Designated sponsor", "Committee", "Board-level"]},
             {"id": 3, "cat": "Governance & Accountability", "nist": "GV-3", "weight": 3, "q": "Are AI ethics principles formally established?", "opts": ["No guidelines", "Informal", "Documented", "Integrated", "Review board"]},
             {"id": 4, "cat": "Governance & Accountability", "nist": "GV-4", "weight": 4, "q": "Do you maintain an AI system inventory (use cases, owners, data sources, vendors, model versions)?", "opts": ["No inventory", "Partial tracking", "Basic inventory", "Comprehensive", "Dynamic automated"]},
             {"id": 5, "cat": "Governance & Accountability", "nist": "GV-5", "weight": 4, "q": "Are third-party AI vendors assessed (security, privacy, safety, compliance)?", "opts": ["No assessment", "Basic contracts", "Questionnaires", "Risk assessments", "Continuous monitoring"]},
-            {"id": 6, "cat": "Data Quality & Management", "nist": "MP-1", "weight": 3, "q": "How mature are your data quality processes (accuracy, completeness, timeliness)?", "opts": ["No processes", "Ad-hoc checks", "Basic validation", "Comprehensive", "Automated monitoring"]},
-            {"id": 7, "cat": "Data Quality & Management", "nist": "MP-2", "weight": 3, "q": "Is data lineage tracked (source → transformations → model inputs → outputs)?", "opts": ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
-            {"id": 8, "cat": "Data Quality & Management", "nist": "MP-3", "weight": 4, "q": "How do you assess and mitigate dataset bias (including protected classes and clinical subpopulations)?", "opts": ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
-            {"id": 9, "cat": "Data Quality & Management", "nist": "MP-4", "weight": 4, "q": "Are data lifecycle policies defined (retention, deletion, access, de-identification)?", "opts": ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
-            {"id": 10, "cat": "Data Quality & Management", "nist": "MP-5", "weight": 2, "q": "If you use synthetic data, is it validated for representativeness and privacy risk?", "opts": ["Used but not validated", "N/A — synthetic data not used", "Basic validation", "Rigorous validation", "Advanced w/ monitoring"]},
-            {"id": 11, "cat": "Governance & Accountability", "nist": "GV-6", "weight": 4, "q": "Are AI roles and responsibilities defined (owner, clinical sponsor, security/privacy, model steward, vendor manager)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 12, "cat": "Governance & Accountability", "nist": "GV-7", "weight": 5, "q": "Do you have an AI policy that explicitly prohibits PHI/PCI in non-approved tools and defines approved use cases?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 13, "cat": "Governance & Accountability", "nist": "GV-8", "weight": 4, "q": "Are AI risk acceptance and escalation criteria defined (e.g., patient safety impacts require clinical leadership sign-off)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 14, "cat": "Governance & Accountability", "nist": "GV-9", "weight": 4, "q": "Is there a formal change-management process for model updates (versioning, approvals, rollback)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 15, "cat": "Governance & Accountability", "nist": "GV-10", "weight": 3, "q": "Do you perform periodic audits of AI systems against governance requirements (and track remediation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 16, "cat": "Data Quality & Management", "nist": "MP-6", "weight": 3, "q": "Are training and evaluation datasets documented with 'datasheets' (provenance, limitations, labeling process, missingness)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 17, "cat": "Data Quality & Management", "nist": "MP-7", "weight": 4, "q": "Do you validate label quality and inter-rater reliability for clinically-derived labels?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 18, "cat": "Data Quality & Management", "nist": "MP-8", "weight": 5, "q": "Are de-identification/anonymization processes validated and re-identification risk assessed for AI datasets?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 19, "cat": "Data Quality & Management", "nist": "MP-9", "weight": 4, "q": "Is access to AI datasets restricted by least privilege, and are queries/logs monitored?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 20, "cat": "Data Quality & Management", "nist": "MP-10", "weight": 4, "q": "Are data drift and concept drift monitored for key clinical/operational variables used by the model?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 21, "cat": "Clinical Safety & Efficacy", "nist": "MP-11", "weight": 5, "q": "Is the intended clinical use clearly defined (patient population, setting, workflow, contraindications)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 22, "cat": "Clinical Safety & Efficacy", "nist": "MS-1", "weight": 5, "q": "Has the model been clinically validated for your setting (local validation / external evidence) before go-live?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 23, "cat": "Clinical Safety & Efficacy", "nist": "MS-2", "weight": 5, "q": "Are performance metrics clinically meaningful (e.g., sensitivity/specificity, PPV/NPV) and stratified by subpopulations?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 24, "cat": "Clinical Safety & Efficacy", "nist": "MS-3", "weight": 5, "q": "Do you have human-in-the-loop requirements (who reviews output, when, and what actions are allowed)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 25, "cat": "Clinical Safety & Efficacy", "nist": "MG-1", "weight": 5, "q": "Is there a documented 'failure modes' analysis for potential patient harm and workflow disruption (including automation bias)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 26, "cat": "Clinical Safety & Efficacy", "nist": "MG-2", "weight": 4, "q": "Are alert thresholds/tuning governed to reduce alarm fatigue and unintended clinical behavior?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 27, "cat": "Clinical Safety & Efficacy", "nist": "MG-3", "weight": 5, "q": "Do you have a process to suspend/disable the AI system if safety issues arise (kill switch) with clear communication steps?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 28, "cat": "Clinical Safety & Efficacy", "nist": "MG-4", "weight": 4, "q": "Are clinical users trained on limitations, appropriate use, and how to report issues?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 29, "cat": "Privacy, Security & Compliance", "nist": "GV-11", "weight": 5, "q": "Are HIPAA/Privacy and Security risk analyses performed for each AI use case (including data sharing and BAAs)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 30, "cat": "Privacy, Security & Compliance", "nist": "GV-12", "weight": 5, "q": "Are vendor contracts/BAAs explicit about data use (no secondary use/training without approval), retention, and breach notification?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 31, "cat": "Privacy, Security & Compliance", "nist": "MG-5", "weight": 4, "q": "Is encryption used for data in transit and at rest for AI pipelines and storage (including logs and backups)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 32, "cat": "Privacy, Security & Compliance", "nist": "MG-6", "weight": 4, "q": "Is model and API access protected (SSO/MFA, service principals, secrets management, network segmentation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 33, "cat": "Privacy, Security & Compliance", "nist": "MG-7", "weight": 4, "q": "Do you assess and mitigate AI security threats (prompt injection, data exfiltration, model inversion, poisoning) appropriate to the use case?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 34, "cat": "Privacy, Security & Compliance", "nist": "MG-8", "weight": 5, "q": "Are outputs and logs reviewed to prevent PHI leakage (e.g., model responses containing PHI or training data echoes)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 35, "cat": "Transparency & Human Oversight", "nist": "MP-12", "weight": 4, "q": "Are users informed when AI is used and what it does (including limitations and confidence indicators where applicable)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 36, "cat": "Transparency & Human Oversight", "nist": "MS-4", "weight": 4, "q": "Can you explain model outputs at an appropriate level for the audience (clinicians vs. admins) and document rationale?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
-            {"id": 37, "cat": "Transparency & Human Oversight", "nist": "GV-13", "weight": 4, "q": "Are documentation artifacts maintained (model cards, intended use, known limitations, evaluation results, update history)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 6, "cat": "Governance & Accountability", "nist": "GV-6", "weight": 4, "q": "Are AI roles and responsibilities defined (owner, clinical sponsor, security/privacy, model steward, vendor manager)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 7, "cat": "Governance & Accountability", "nist": "GV-7", "weight": 5, "q": "Do you have an AI policy that explicitly prohibits PHI/PCI in non-approved tools and defines approved use cases?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 8, "cat": "Governance & Accountability", "nist": "GV-8", "weight": 4, "q": "Are AI risk acceptance and escalation criteria defined (e.g., patient safety impacts require clinical leadership sign-off)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 9, "cat": "Governance & Accountability", "nist": "GV-9", "weight": 4, "q": "Is there a formal change-management process for model updates (versioning, approvals, rollback)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 10, "cat": "Governance & Accountability", "nist": "GV-10", "weight": 3, "q": "Do you perform periodic audits of AI systems against governance requirements (and track remediation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 11, "cat": "Governance & Accountability", "nist": "GV-11", "weight": 5, "q": "Are HIPAA/Privacy and Security risk analyses performed for each AI use case (including data sharing and BAAs)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 12, "cat": "Governance & Accountability", "nist": "GV-12", "weight": 5, "q": "Are vendor contracts/BAAs explicit about data use (no secondary use/training without approval), retention, and breach notification?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 13, "cat": "Governance & Accountability", "nist": "GV-13", "weight": 4, "q": "Are documentation artifacts maintained (model cards, intended use, known limitations, evaluation results, update history)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            // Data Quality & Management (14-23)
+            {"id": 14, "cat": "Data Quality & Management", "nist": "MP-1", "weight": 3, "q": "How mature are your data quality processes (accuracy, completeness, timeliness)?", "opts": ["No processes", "Ad-hoc checks", "Basic validation", "Comprehensive", "Automated monitoring"]},
+            {"id": 15, "cat": "Data Quality & Management", "nist": "MP-2", "weight": 3, "q": "Is data lineage tracked (source → transformations → model inputs → outputs)?", "opts": ["No tracking", "Manual docs", "Basic lineage", "Comprehensive", "Automated end-to-end"]},
+            {"id": 16, "cat": "Data Quality & Management", "nist": "MP-3", "weight": 4, "q": "How do you assess and mitigate dataset bias (including protected classes and clinical subpopulations)?", "opts": ["No assessment", "Awareness only", "Basic detection", "Regular audits", "Advanced automated"]},
+            {"id": 17, "cat": "Data Quality & Management", "nist": "MP-4", "weight": 4, "q": "Are data lifecycle policies defined (retention, deletion, access, de-identification)?", "opts": ["No policies", "Informal", "Basic documented", "Comprehensive", "Automated"]},
+            {"id": 18, "cat": "Data Quality & Management", "nist": "MP-5", "weight": 0, "q": "If you use synthetic data, is it validated for representativeness and privacy risk?", "opts": ["N/A — synthetic data not used", "Used but not validated", "Basic validation", "Rigorous validation", "Advanced w/ monitoring"], "naOption": 1, "syntheticWeight": 2},
+            {"id": 19, "cat": "Data Quality & Management", "nist": "MP-6", "weight": 3, "q": "Are training and evaluation datasets documented with 'datasheets' (provenance, limitations, labeling process, missingness)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 20, "cat": "Data Quality & Management", "nist": "MP-7", "weight": 4, "q": "Do you validate label quality and inter-rater reliability for clinically-derived labels?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 21, "cat": "Data Quality & Management", "nist": "MP-8", "weight": 5, "q": "Are de-identification/anonymization processes validated and re-identification risk assessed for AI datasets?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 22, "cat": "Data Quality & Management", "nist": "MP-9", "weight": 4, "q": "Is access to AI datasets restricted by least privilege, and are queries/logs monitored?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 23, "cat": "Data Quality & Management", "nist": "MP-10", "weight": 4, "q": "Are data drift and concept drift monitored for key clinical/operational variables used by the model?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            // Clinical Safety & Efficacy (24-31)
+            {"id": 24, "cat": "Clinical Safety & Efficacy", "nist": "MP-11", "weight": 5, "q": "Is the intended clinical use clearly defined (patient population, setting, workflow, contraindications)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 25, "cat": "Clinical Safety & Efficacy", "nist": "MS-1", "weight": 5, "q": "Has the model been clinically validated for your setting (local validation / external evidence) before go-live?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 26, "cat": "Clinical Safety & Efficacy", "nist": "MS-2", "weight": 5, "q": "Are performance metrics clinically meaningful (e.g., sensitivity/specificity, PPV/NPV) and stratified by subpopulations?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 27, "cat": "Clinical Safety & Efficacy", "nist": "MS-3", "weight": 5, "q": "Do you have human-in-the-loop requirements (who reviews output, when, and what actions are allowed)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 28, "cat": "Clinical Safety & Efficacy", "nist": "MG-1", "weight": 5, "q": "Is there a documented 'failure modes' analysis for potential patient harm and workflow disruption (including automation bias)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 29, "cat": "Clinical Safety & Efficacy", "nist": "MG-2", "weight": 4, "q": "Are alert thresholds/tuning governed to reduce alarm fatigue and unintended clinical behavior?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 30, "cat": "Clinical Safety & Efficacy", "nist": "MG-3", "weight": 5, "q": "Do you have a process to suspend/disable the AI system if safety issues arise (kill switch) with clear communication steps?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 31, "cat": "Clinical Safety & Efficacy", "nist": "MG-4", "weight": 4, "q": "Are clinical users trained on limitations, appropriate use, and how to report issues?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            // Privacy, Security & Compliance (32-35)
+            {"id": 32, "cat": "Privacy, Security & Compliance", "nist": "MG-5", "weight": 4, "q": "Is encryption used for data in transit and at rest for AI pipelines and storage (including logs and backups)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 33, "cat": "Privacy, Security & Compliance", "nist": "MG-6", "weight": 4, "q": "Is model and API access protected (SSO/MFA, service principals, secrets management, network segmentation)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 34, "cat": "Privacy, Security & Compliance", "nist": "MG-7", "weight": 4, "q": "Do you assess and mitigate AI security threats (prompt injection, data exfiltration, model inversion, poisoning) appropriate to the use case?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 35, "cat": "Privacy, Security & Compliance", "nist": "MG-8", "weight": 5, "q": "Are outputs and logs reviewed to prevent PHI leakage (e.g., model responses containing PHI or training data echoes)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            // Transparency & Human Oversight (36-38)
+            {"id": 36, "cat": "Transparency & Human Oversight", "nist": "MP-12", "weight": 4, "q": "Are users informed when AI is used and what it does (including limitations and confidence indicators where applicable)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            {"id": 37, "cat": "Transparency & Human Oversight", "nist": "MS-4", "weight": 4, "q": "Can you explain model outputs at an appropriate level for the audience (clinicians vs. admins) and document rationale?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
             {"id": 38, "cat": "Transparency & Human Oversight", "nist": "MG-9", "weight": 4, "q": "Is there a feedback loop for users to contest/override AI outputs and for teams to investigate/adjust?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
+            // Monitoring & Incident Response (39-40)
             {"id": 39, "cat": "Monitoring & Incident Response", "nist": "MS-5", "weight": 5, "q": "Do you continuously monitor model performance, drift, and incidents post-deployment with defined KPIs and thresholds?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]},
             {"id": 40, "cat": "Monitoring & Incident Response", "nist": "MG-10", "weight": 5, "q": "Is there an AI-specific incident response playbook (clinical escalation, privacy/security IR, vendor coordination, communications)?", "opts": ["Not implemented", "Planned / ad hoc", "Partially implemented", "Implemented", "Optimized / continuously improved"]}
         ];
@@ -610,10 +617,14 @@
             const container = document.getElementById('assessmentQuestions');
             container.innerHTML = '';
 
-            const categories = [...new Set(questions.map(q => q.cat))];
+            // Sort questions by id to guarantee correct order
+            const sortedQuestions = [...questions].sort((a, b) => a.id - b.id);
+            // Build categories in id order (not Set insertion order)
+            const categories = [];
+            sortedQuestions.forEach(q => { if (!categories.includes(q.cat)) categories.push(q.cat); });
 
             categories.forEach(cat => {
-                const catQuestions = questions.filter(q => q.cat === cat);
+                const catQuestions = sortedQuestions.filter(q => q.cat === cat);
 
                 const section = document.createElement('div');
                 section.className = 'category-section';
@@ -691,7 +702,10 @@
                 const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
                 if (checked) {
                     const v = parseInt(checked.value);
-                    const w = parseFloat(q.weight || 1);
+                    const aText = (q.opts && q.opts[v-1]) ? q.opts[v-1] : '';
+                    // MP-5 synthetic data: N/A = skip entirely (score 0, weight 0)
+                    if (q.nist === 'MP-5' && (aText.indexOf('N/A') === 0 || aText.indexOf('Not used') === 0)) return;
+                    const w = (q.nist === 'MP-5') ? 2 : parseFloat(q.weight || 1);
                     weightedSum += v * w;
                     weightTotal += w;
                     answeredCount++;
@@ -745,7 +759,11 @@
                     const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
                     if (checked) {
                         const v = parseInt(checked.value);
-                        const w = parseFloat(q.weight || 1);
+                        // Skip N/A options - they don't count toward the score
+                        const aText2 = (q.opts && q.opts[v-1]) ? q.opts[v-1] : '';
+                        // MP-5 synthetic data: N/A = skip entirely
+                        if (q.nist === 'MP-5' && (aText2.indexOf('N/A') === 0 || aText2.indexOf('Not used') === 0)) return;
+                        const w = (q.nist === 'MP-5') ? 2 : parseFloat(q.weight || 1);
                         wSum += v * w;
                         wTotal += w;
                     }
@@ -829,10 +847,18 @@
 
                 const v = parseInt(checked.value, 10);
                 const idx = v - 1;
-                const w = parseFloat(q.weight || 1);
+                const answerText = (q.opts && q.opts[idx]) ? q.opts[idx] : '';
+
+                // Q18 synthetic data: N/A = score 0 weight 0; any use = weight 2
+                const isNaAnswer = (answerText.indexOf('N/A') === 0 || answerText.indexOf('Not used') === 0);
+                if (q.nist === 'MP-5' && isNaAnswer) {
+                    csv += `"${esc(q.cat)}","${esc(q.nist || '')}","${esc(q.q)}","${esc(answerText)}",0,0,0,0\n`;
+                    return;
+                }
+
+                const w = (q.nist === 'MP-5') ? 2 : parseFloat(q.weight || 1);
                 const weighted = (v * w).toFixed(2);
                 const residual = (6 - v); // 5 (worst) -> 1 (best)
-                const answerText = (q.opts && q.opts[idx]) ? q.opts[idx] : '';
 
                 csv += `"${esc(q.cat)}","${esc(q.nist || '')}","${esc(q.q)}","${esc(answerText)}",${v},${w},${weighted},${residual}\n`;
             });
@@ -869,9 +895,11 @@
             questions.forEach(q => {
                 const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
                 if (checked) {
-                    const idx = parseInt(checked.value) - 1;
+                    const v = parseInt(checked.value);
+                    const idx = v - 1;
+                    const scoreLabel = (q.naOption && v === parseInt(q.naOption)) ? '0 (N/A - no synthetic data)' : `${v}/5`;
                     breakdown += `Q${q.id} [${q.cat}]: ${q.q}
-  → ${q.opts[idx]} (Score: ${checked.value}/5)
+  → ${q.opts[idx]} (Score: ${scoreLabel})
 
 `;
                 }
@@ -884,7 +912,12 @@
                 let sum = 0, count = 0;
                 catQs.forEach(q => {
                     const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
-                    if (checked) { sum += parseInt(checked.value); count++; }
+                    if (checked) {
+                        const v = parseInt(checked.value);
+                        // Skip N/A options from category average
+                        if (q.naOption && v === parseInt(q.naOption)) return;
+                        sum += v; count++;
+                    }
                 });
                 if (count > 0) catSummary += `${cat}: ${(sum/count).toFixed(2)}/5
 `;
