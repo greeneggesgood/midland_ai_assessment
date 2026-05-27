@@ -972,8 +972,48 @@ ${breakdown}`.trim();
             statusEl.style.display = 'none';
 
             try {
+                // Auto-calculate score before submitting if not already done
+                const scoreEl = document.getElementById('overallScore');
+                if (!scoreEl || !scoreEl.textContent || scoreEl.textContent.trim() === '' || scoreEl.textContent.trim() === '0.00') {
+                    // Trigger calculate
+                    const calcBtn = document.getElementById('calculateBtn') || document.querySelector('.btn-calculate') || document.querySelector('[onclick*="calculate"]');
+                    if (calcBtn) calcBtn.click();
+                    // Wait a moment for calculation to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
                 const payload = buildPayload();
                 const dept = document.getElementById('department') ? document.getElementById('department').value : '';
+                // Build assessment data from current answers
+                let assessmentText = payload.message || '';
+                if (!assessmentText || assessmentText.length < 50) {
+                    // Force rebuild from questions
+                    let breakdown = '';
+                    if (typeof questions !== 'undefined') {
+                        questions.forEach(q => {
+                            const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                            if (checked) {
+                                const v = parseInt(checked.value);
+                                const idx = v - 1;
+                                const scoreLabel = (q.naOption && v === parseInt(q.naOption)) ? '0 (N/A)' : `${v}/5`;
+                                breakdown += `Q${q.id} [${q.cat}]: ${q.q}\n  → ${q.opts[idx]} (Score: ${scoreLabel})\n\n`;
+                            }
+                        });
+                        const categories = [...new Set(questions.map(q => q.cat))];
+                        let catSummary = '';
+                        categories.forEach(cat => {
+                            const catQs = questions.filter(q => q.cat === cat);
+                            let sum = 0, count = 0;
+                            catQs.forEach(q => {
+                                const checked = document.querySelector(`input[name="q${q.id}"]:checked`);
+                                if (checked) { const v = parseInt(checked.value); if (!q.naOption || v !== parseInt(q.naOption)) { sum += v; count++; } }
+                            });
+                            if (count > 0) catSummary += `${cat}: ${(sum/count).toFixed(2)}/5\n`;
+                        });
+                        assessmentText = `MIDLAND HEALTH — AI RISK ASSESSMENT RESULTS\n============================================\nOrganization: ${payload.orgName}\nAssessor: ${payload.assessorName}\nEmail: ${payload.assessorEmail}\n\nOVERALL SCORE: ${payload.overallScore} / 5.00\nRISK LEVEL: ${payload.riskLevel}\n\nCATEGORY SCORES\n${catSummary}\nDETAILED BREAKDOWN\n${breakdown}`.trim();
+                    }
+                }
+
                 const submitPayload = {
                     vendorName: payload.orgName,
                     contactName: payload.assessorName,
@@ -981,7 +1021,7 @@ ${breakdown}`.trim();
                     department: dept,
                     overallScore: parseFloat(payload.overallScore) || 0,
                     riskLevel: (payload.riskLevel || '').replace(' Risk', '').trim(),
-                    assessmentData: payload.message,
+                    assessmentData: assessmentText,
                     submissionDate: new Date().toISOString()
                 };
 
