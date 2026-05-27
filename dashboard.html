@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Midland Health — AI Vendor Assessment Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#003B5C;--dark:#002A42;--yellow:#FFB81C;--yellow-light:#FFF4D6;
+  --blue-light:#E6F2F8;--red:#C62828;--orange:#FF8C00;--green:#228B22;
+  --bg:#F0F4F8;--white:#fff;--border:#D1DCE5;--muted:#6B7E8F;--text:#1A2B3C;
+  --font:'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+header{background:linear-gradient(135deg,var(--navy),var(--dark));padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.25)}
+.logo-text{color:#fff;font-size:16px;font-weight:700}.logo-text span{color:var(--yellow)}
+header .meta{color:#A8C4D8;font-size:12px}
+.accent-bar{height:4px;background:linear-gradient(90deg,var(--yellow),#FFDA6A)}
+.container{max-width:1400px;margin:0 auto;padding:1.5rem}
+
+/* TABS */
+.view-toggle{display:flex;gap:6px;margin-bottom:1.25rem;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content}
+.vbtn{padding:7px 18px;border:none;background:transparent;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.15s;font-family:var(--font)}
+.vbtn.active{background:var(--navy);color:#fff}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:1.5rem}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;border-top:4px solid var(--border)}
+.metric.mn{border-top-color:var(--navy)}.metric.mr{border-top-color:var(--red)}
+.metric.mg{border-top-color:var(--green)}.metric.mo{border-top-color:var(--orange)}
+.metric.mb{border-top-color:#1F5C99}.metric.my{border-top-color:var(--yellow)}
+.metric label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;font-weight:600}
+.metric .val{font-size:2em;font-weight:800;line-height:1;color:var(--navy)}
+.metric .sub{font-size:11px;color:var(--muted);margin-top:4px}
+.metric.mr .val{color:var(--red)}.metric.mg .val{color:var(--green)}
+.metric.mo .val{color:var(--orange)}.metric.mb .val{color:#1F5C99}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem}
+.card h3{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:1rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:1.5rem}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* VENDOR CARDS */
+.vendor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:1.5rem}
+.vendor-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.15s;position:relative}
+.vendor-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.12);transform:translateY(-2px)}
+.vendor-card-top{height:8px}
+.vc-critical .vendor-card-top{background:var(--red)}
+.vc-high .vendor-card-top{background:var(--orange)}
+.vc-medium .vendor-card-top{background:#F9A825}
+.vc-low .vendor-card-top{background:var(--green)}
+.vc-minimal .vendor-card-top{background:#1F5C99}
+.vendor-card-body{padding:1.25rem}
+.vc-name{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.vc-meta{font-size:12px;color:var(--muted);margin-bottom:12px}
+.vc-score-wrap{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.vc-score-circle{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0}
+.vc-score-info{flex:1}
+.vc-score-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.vc-risk-badge{font-size:12px;font-weight:700;margin-top:2px}
+.vc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.vc-date{font-size:11px;color:var(--muted)}
+.vc-status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+
+/* SCORE BAR */
+.score-bar-bg{background:#E5E7EB;border-radius:4px;height:6px;margin-top:6px}
+.score-bar-fill{height:6px;border-radius:4px;transition:width 0.3s}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-critical{background:#FFEBEE;color:#8B0000}.b-high{background:#FFF3E0;color:#BF360C}
+.b-medium{background:#FFF8E1;color:#827717}.b-low{background:#E8F5E9;color:#1B5E20}
+.b-minimal{background:#E3F2FD;color:#0D47A1}.b-active{background:#E8F5E9;color:#1B5E20}
+.b-archived{background:#ECEFF1;color:#546E7A}.b-pending{background:#FFF9C4;color:#827717}
+.b-approved{background:#E8F5E9;color:#1B5E20}.b-rejected{background:#FFEBEE;color:#8B0000}
+.b-review{background:#E3F2FD;color:#0D47A1}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:2px solid var(--border);background:var(--bg)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#F8FAFC}
+.tbl-wrap{overflow:auto;max-height:520px}
+
+/* CONTROLS */
+.controls{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+.controls input,.controls select{font-family:var(--font);font-size:13px;padding:7px 12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);outline:none}
+.controls input{flex:1;min-width:200px}
+.btn{padding:7px 16px;font-family:var(--font);font-size:13px;font-weight:600;border:none;border-radius:7px;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--dark)}
+.btn-yellow{background:var(--yellow);color:var(--navy)}.btn-yellow:hover{background:#e6a800}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}.btn-outline:hover{background:var(--bg)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1a6b1a}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a01020}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* DETAIL PANEL */
+.detail-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+.detail-overlay.show{display:flex}
+.detail-modal{background:var(--white);border-radius:16px;width:90%;max-width:800px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.modal-header{padding:1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);z-index:1}
+.modal-title{font-size:20px;font-weight:800;color:var(--navy)}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1}
+.modal-body{padding:1.5rem}
+.modal-section{margin-bottom:1.5rem}
+.modal-section h4{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-item label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;display:block;margin-bottom:3px}
+.info-item .ival{font-size:14px;font-weight:600;color:var(--text)}
+.action-row{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.score-section{background:var(--bg);border-radius:10px;padding:1rem}
+.score-big{font-size:48px;font-weight:900;line-height:1}
+.notif{position:fixed;top:80px;right:20px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:slideIn 0.3s ease}
+.notif-green{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.notif-red{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.notif-blue{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+.empty{text-align:center;padding:4rem;color:var(--muted);font-size:14px}
+.load-panel{background:var(--yellow-light);border:2px solid var(--yellow);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}
+.load-panel h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.load-panel p{font-size:13px;color:var(--muted);margin-bottom:1rem}
+.pag{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+.pag button{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--white);cursor:pointer;font-size:12px;font-family:var(--font)}
+.pag button:disabled{opacity:0.4;cursor:default}
+footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:1rem}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-text"><span>Midland Health</span> &mdash; AI Vendor Assessment Dashboard</div>
+  <div class="meta">Internal Use Only &middot; Confidential</div>
+</header>
+<div class="accent-bar"></div>
+<div class="container">
+
+<div class="load-panel" id="loadPanel">
+  <h3>&#x1F4CB; AI Vendor Assessment Dashboard</h3>
+  <p>Load vendor submissions from SharePoint or preview with demo data.</p>
+  <button class="btn btn-navy" onclick="loadData()">&#x1F504; Load Vendor Data</button>
+  <button class="btn btn-outline" style="margin-left:8px" onclick="loadDemoData()">&#x1F441; Preview Demo Data</button>
+  <div id="loadError" style="margin-top:10px;color:var(--red);font-size:13px;display:none"></div>
+</div>
+
+<div id="mainContent" style="display:none">
+
+<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:1.25rem">
+  <div class="view-toggle" style="margin-bottom:0">
+    <button class="vbtn active" onclick="showView('summary',this)">&#x1F4CA; Summary</button>
+    <button class="vbtn" onclick="showView('vendors',this)">&#x1F3E2; Vendor Cards</button>
+    <button class="vbtn" onclick="showView('table',this)">&#x1F4CB; Detail Table</button>
+    <button class="vbtn" onclick="showView('archived',this)">&#x1F4E6; Archived</button>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-yellow" onclick="loadData()">&#x1F504; Refresh</button>
+    <button class="btn btn-outline" onclick="exportCSV()">&#x1F4CA; Export CSV</button>
+  </div>
+</div>
+
+<!-- METRICS -->
+<div class="metrics" id="metricsRow">
+  <div class="metric mn"><label>Total Vendors</label><div class="val" id="mTotal">0</div><div class="sub">submissions</div></div>
+  <div class="metric mr"><label>Critical / High</label><div class="val" id="mHigh">0</div><div class="sub">need attention</div></div>
+  <div class="metric mo"><label>Medium Risk</label><div class="val" id="mMedium">0</div><div class="sub">monitor</div></div>
+  <div class="metric mg"><label>Low / Minimal</label><div class="val" id="mLow">0</div><div class="sub">approved range</div></div>
+  <div class="metric mb"><label>Pending Review</label><div class="val" id="mPending">0</div><div class="sub">awaiting decision</div></div>
+  <div class="metric my"><label>Avg Score</label><div class="val" id="mAvg">0</div><div class="sub">out of 5.0</div></div>
+</div>
+
+<!-- SUMMARY VIEW -->
+<div id="view-summary">
+  <div class="grid2">
+    <div class="card">
+      <h3>Risk level distribution</h3>
+      <div style="position:relative;height:260px"><canvas id="riskChart"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Score distribution</h3>
+      <div style="position:relative;height:260px"><canvas id="scoreChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Approval status overview</h3>
+    <div style="position:relative;height:200px"><canvas id="approvalChart"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Recent submissions</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Vendor</th><th>Department</th><th>Score</th><th>Risk</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="recentTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- VENDOR CARDS VIEW -->
+<div id="view-vendors" style="display:none">
+  <div class="controls">
+    <input type="text" id="vcSearch" placeholder="&#x1F50D; Search vendor, contact, department..." oninput="filterVendors()">
+    <select id="vcRisk" onchange="filterVendors()">
+      <option value="">All risk levels</option>
+      <option value="Critical Risk">Critical</option>
+      <option value="High Risk">High</option>
+      <option value="Medium Risk">Medium</option>
+      <option value="Low Risk">Low</option>
+      <option value="Minimal Risk">Minimal</option>
+    </select>
+    <select id="vcDept" onchange="filterVendors()"><option value="">All departments</option></select>
+    <select id="vcApproval" onchange="filterVendors()">
+      <option value="">All statuses</option>
+      <option value="Pending Review">Pending</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
+      <option value="Under Review">Under Review</option>
+    </select>
+    <span id="vcCount" style="font-size:12px;color:var(--muted);white-space:nowrap"></span>
+  </div>
+  <div class="vendor-grid" id="vendorGrid"></div>
+</div>
+
+<!-- DETAIL TABLE VIEW -->
+<div id="view-table" style="display:none">
+  <div class="controls">
+    <input type="text" id="tblSearch" placeholder="&#x1F50D; Search vendor, contact, department..." oninput="filterTable()">
+    <select id="tblRisk" onchange="filterTable()">
+      <option value="">All risk levels</option>
+      <option value="Critical Risk">Critical</option>
+      <option value="High Risk">High</option>
+      <option value="Medium Risk">Medium</option>
+      <option value="Low Risk">Low</option>
+      <option value="Minimal Risk">Minimal</option>
+    </select>
+    <select id="tblDept" onchange="filterTable()"><option value="">All departments</option></select>
+    <span id="tblCount" style="font-size:12px;color:var(--muted);white-space:nowrap"></span>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Vendor</th><th>Contact</th><th>Department</th><th>Score</th><th>Risk Level</th><th>Submitted</th><th>Approval</th><th>Actions</th></tr></thead>
+        <tbody id="mainTable"></tbody>
+      </table>
+    </div>
+    <div class="pag">
+      <button id="tblPrev" onclick="chgPage(-1)">&#x2190; Prev</button>
+      <span id="tblPageInfo"></span>
+      <button id="tblNext" onclick="chgPage(1)">Next &#x2192;</button>
+      <span style="margin-left:auto" id="tblShowCnt"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ARCHIVED VIEW -->
+<div id="view-archived" style="display:none">
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Vendor</th><th>Contact</th><th>Department</th><th>Score</th><th>Risk Level</th><th>Submitted</th><th>Archived</th><th>Actions</th></tr></thead>
+        <tbody id="archivedTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- end mainContent -->
+
+<!-- DETAIL MODAL -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeModal(event)">
+  <div class="detail-modal" id="detailModal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModalBtn()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+</div>
+<footer>Midland Health &middot; Information Security &middot; AI Vendor Assessment Dashboard &middot; Confidential &mdash; Internal Use Only</footer>
+
+<script>
+const PA_URL = 'https://defaultbee0e4a338e9488d9c007a89ac587f.85.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/783804f71502439c83184f00a26513e8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IC5j1Rczf26bNsMcr-z9tKmmjFz2TJcAgQi_PxIZ-dg';
+
+let allData = [];
+let filteredVendors = [];
+let filteredTable = [];
+let tblPage = 1;
+const TBL_PAGE = 20;
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById('loadError').style.display = 'none';
+  try {
+    const response = await fetch(PA_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'getItems'})
+    });
+    if (!response.ok) throw new Error('Flow returned ' + response.status);
+    const raw = await response.json();
+    let items = Array.isArray(raw) ? raw : raw.value || (raw.body && raw.body.value) || [];
+    if (typeof items === 'string') items = JSON.parse(items);
+    processData(items);
+    document.getElementById('loadPanel').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'block';
+    showNotif('✅ ' + items.length + ' vendors loaded', 'green');
+  } catch(err) {
+    document.getElementById('loadError').textContent = 'Could not load: ' + err.message;
+    document.getElementById('loadError').style.display = 'block';
+  }
+}
+
+function loadDemoData() {
+  const demo = [
+    {id:1,vendorName:'Acme AI Solutions',contactName:'John Smith',contactEmail:'john@acme.com',department:'Information Technology',score:4.2,riskLevel:'Low Risk',status:'Active',approvalStatus:'Approved',submissionDate:'2026-03-15',assessmentData:'Strong data governance policies. HIPAA compliant. SOC2 Type II certified.'},
+    {id:2,vendorName:'MedTech Analytics',contactName:'Sara Johnson',contactEmail:'sara@medtech.com',department:'Clinical Operations',score:2.1,riskLevel:'High Risk',status:'Active',approvalStatus:'Rejected',submissionDate:'2026-04-02',assessmentData:'Inadequate data encryption. No BAA in place. Missing audit logging.'},
+    {id:3,vendorName:'HealthAI Corp',contactName:'Mike Davis',contactEmail:'mike@healthai.com',department:'Supply Chain',score:3.8,riskLevel:'Low Risk',status:'Active',approvalStatus:'Approved',submissionDate:'2026-04-18',assessmentData:'Good security posture. Minor gaps in incident response plan.'},
+    {id:4,vendorName:'DataSync Health',contactName:'Lisa Chen',contactEmail:'lisa@datasync.com',department:'Finance',score:1.5,riskLevel:'Critical Risk',status:'Active',approvalStatus:'Rejected',submissionDate:'2026-05-01',assessmentData:'Critical security gaps. No encryption at rest. PHI handling non-compliant.'},
+    {id:5,vendorName:'CloudMed Systems',contactName:'Tom Wilson',contactEmail:'tom@cloudmed.com',department:'Information Technology',score:4.8,riskLevel:'Minimal Risk',status:'Active',approvalStatus:'Approved',submissionDate:'2026-05-10',assessmentData:'Excellent security practices. FedRAMP authorized. Full HIPAA compliance.'},
+    {id:6,vendorName:'NeuralDx Inc',contactName:'Amy Park',contactEmail:'amy@neuraldx.com',department:'Radiology',score:3.1,riskLevel:'Medium Risk',status:'Active',approvalStatus:'Under Review',submissionDate:'2026-05-15',assessmentData:'Moderate risk. AI model explainability needs improvement. Pending BAA review.'},
+    {id:7,vendorName:'VitalAI',contactName:'Carlos Rivera',contactEmail:'carlos@vitalai.com',department:'Emergency Medicine',score:2.8,riskLevel:'Medium Risk',status:'Active',approvalStatus:'Pending Review',submissionDate:'2026-05-20',assessmentData:'Some concerns around data retention policies. Requires additional documentation.'},
+    {id:8,vendorName:'PharmaBot Solutions',contactName:'Diana Lee',contactEmail:'diana@pharmabot.com',department:'Pharmacy',score:4.5,riskLevel:'Low Risk',status:'Active',approvalStatus:'Approved',submissionDate:'2026-05-22',assessmentData:'Strong compliance framework. HITRUST certified. Excellent audit trails.'},
+    {id:9,vendorName:'OldVendor Inc',contactName:'Pat Brown',contactEmail:'pat@oldvendor.com',department:'HR',score:3.1,riskLevel:'Medium Risk',status:'Archived',approvalStatus:'Approved',submissionDate:'2025-01-10',assessmentData:'Archived after contract expiration.'},
+  ];
+  processData(demo, true);
+  document.getElementById('loadPanel').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  showNotif('👁 Demo data loaded', 'blue');
+}
+
+function processData(items, isDemo) {
+  allData = isDemo ? items : items.map(item => ({
+    id: item.ID || item.id || Math.random(),
+    vendorName: item.Vendor_x0020_Name || item.VendorName || item.Title || '',
+    contactName: item.Contact_x0020_Name || item.ContactName || '',
+    contactEmail: item.Contact_x0020_Email || item.ContactEmail || '',
+    department: item.Department_x0020_Requesting || item.Department || '',
+    score: parseFloat(item.Overall_x0020_Score || item.OverallScore || 0),
+    riskLevel: item.Risk_x0020_Level || item.RiskLevel || '',
+    assessmentData: item.Assessment_x0020_Data || item.AssessmentData || '',
+    status: item.Status || 'Active',
+    approvalStatus: item.Approval_x0020_Status || item.ApprovalStatus || 'Pending Review',
+    submissionDate: item.Submission_x0020_Date || item.SubmissionDate || item.Created || '',
+    archivedDate: item.Archived_x0020_Date || ''
+  }));
+
+  // Populate dept dropdowns
+  const depts = [...new Set(allData.map(d => d.department).filter(Boolean))].sort();
+  ['vcDept','tblDept'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">All departments</option>';
+    depts.forEach(d => { const o = document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+  });
+
+  updateMetrics();
+  buildCharts();
+  renderRecentTable();
+  filterVendors();
+  filterTable();
+  renderArchivedTable();
+}
+
+// ── METRICS ───────────────────────────────────────────────────────────────────
+function updateMetrics() {
+  const active = allData.filter(d => d.status !== 'Archived');
+  const total = active.length;
+  const high = active.filter(d => d.riskLevel === 'Critical Risk' || d.riskLevel === 'High Risk').length;
+  const med = active.filter(d => d.riskLevel === 'Medium Risk').length;
+  const low = active.filter(d => d.riskLevel === 'Low Risk' || d.riskLevel === 'Minimal Risk').length;
+  const pending = active.filter(d => d.approvalStatus === 'Pending Review' || d.approvalStatus === 'Under Review').length;
+  const avg = total ? (active.reduce((s,d) => s + d.score, 0) / total).toFixed(1) : 0;
+
+  document.getElementById('mTotal').textContent = total;
+  document.getElementById('mHigh').textContent = high;
+  document.getElementById('mMedium').textContent = med;
+  document.getElementById('mLow').textContent = low;
+  document.getElementById('mPending').textContent = pending;
+  document.getElementById('mAvg').textContent = avg;
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+let riskChartInst, scoreChartInst, approvalChartInst;
+
+function buildCharts() {
+  const active = allData.filter(d => d.status !== 'Archived');
+  const riskCounts = {
+    'Critical Risk': active.filter(d=>d.riskLevel==='Critical Risk').length,
+    'High Risk': active.filter(d=>d.riskLevel==='High Risk').length,
+    'Medium Risk': active.filter(d=>d.riskLevel==='Medium Risk').length,
+    'Low Risk': active.filter(d=>d.riskLevel==='Low Risk').length,
+    'Minimal Risk': active.filter(d=>d.riskLevel==='Minimal Risk').length,
+  };
+
+  if (riskChartInst) riskChartInst.destroy();
+  riskChartInst = new Chart(document.getElementById('riskChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(riskCounts),
+      datasets: [{
+        data: Object.values(riskCounts),
+        backgroundColor: ['#C62828','#E65100','#F9A825','#228B22','#1F5C99'],
+        borderWidth: 3, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8}},tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed}`}}}
+    }
+  });
+
+  // Score histogram
+  const bins = [0,0,0,0,0];
+  active.forEach(d => {
+    const idx = Math.min(4, Math.floor(d.score) - 1);
+    if (idx >= 0) bins[idx]++;
+  });
+  if (scoreChartInst) scoreChartInst.destroy();
+  scoreChartInst = new Chart(document.getElementById('scoreChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1.0–1.9','2.0–2.9','3.0–3.9','4.0–4.9','5.0'],
+      datasets: [{
+        label: 'Vendors',
+        data: bins,
+        backgroundColor: ['#C62828','#E65100','#F9A825','#228B22','#1F5C99'],
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{font:{size:11}}},x:{ticks:{font:{size:11}}}}
+    }
+  });
+
+  // Approval status
+  const appCounts = {
+    Approved: active.filter(d=>d.approvalStatus==='Approved').length,
+    'Pending Review': active.filter(d=>d.approvalStatus==='Pending Review').length,
+    'Under Review': active.filter(d=>d.approvalStatus==='Under Review').length,
+    Rejected: active.filter(d=>d.approvalStatus==='Rejected').length,
+  };
+  if (approvalChartInst) approvalChartInst.destroy();
+  approvalChartInst = new Chart(document.getElementById('approvalChart'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(appCounts),
+      datasets: [{
+        data: Object.values(appCounts),
+        backgroundColor: ['#228B22','#F9A825','#1F5C99','#C62828'],
+        borderRadius: 5
+      }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,ticks:{font:{size:11}}},y:{ticks:{font:{size:11}}}}
+    }
+  });
+}
+
+// ── RECENT TABLE ──────────────────────────────────────────────────────────────
+function renderRecentTable() {
+  const recent = allData.filter(d=>d.status!=='Archived')
+    .sort((a,b) => new Date(b.submissionDate) - new Date(a.submissionDate))
+    .slice(0,8);
+  document.getElementById('recentTable').innerHTML = recent.map((d,i) => `
+    <tr style="cursor:pointer" onclick="openModal(${i}, 'recent')">
+      <td><div style="font-weight:600">${d.vendorName}</div></td>
+      <td style="font-size:12px">${d.department}</td>
+      <td>${scoreCell(d.score)}</td>
+      <td>${riskBadge(d.riskLevel)}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtDate(d.submissionDate)}</td>
+      <td>${approvalBadge(d.approvalStatus)}</td>
+      <td onclick="event.stopPropagation()">${actionBtns(d, i, 'recent')}</td>
+    </tr>`).join('');
+}
+
+// ── VENDOR CARDS ──────────────────────────────────────────────────────────────
+function filterVendors() {
+  const s = document.getElementById('vcSearch').value.toLowerCase();
+  const r = document.getElementById('vcRisk').value;
+  const dept = document.getElementById('vcDept').value;
+  const app = document.getElementById('vcApproval').value;
+
+  filteredVendors = allData.filter(d => {
+    if (d.status === 'Archived') return false;
+    if (s && !(d.vendorName+d.contactName+d.department).toLowerCase().includes(s)) return false;
+    if (r && d.riskLevel !== r) return false;
+    if (dept && d.department !== dept) return false;
+    if (app && d.approvalStatus !== app) return false;
+    return true;
+  });
+
+  document.getElementById('vcCount').textContent = filteredVendors.length + ' vendors';
+  const grid = document.getElementById('vendorGrid');
+  if (!filteredVendors.length) { grid.innerHTML = '<div class="empty">No vendors match filters</div>'; return; }
+
+  grid.innerHTML = filteredVendors.map((d, i) => {
+    const rClass = {'Critical Risk':'vc-critical','High Risk':'vc-high','Medium Risk':'vc-medium','Low Risk':'vc-low','Minimal Risk':'vc-minimal'}[d.riskLevel]||'vc-low';
+    const sc = scoreColor(d.score);
+    const barW = Math.min(100,(d.score/5)*100).toFixed(0);
+    return `<div class="vendor-card ${rClass}" data-idx="${i}">
+      <div class="vendor-card-top"></div>
+      <div class="vendor-card-body">
+        <div class="vc-name">${d.vendorName}</div>
+        <div class="vc-meta">${d.department} &middot; ${d.contactName}</div>
+        <div class="vc-score-wrap">
+          <div class="vc-score-circle" style="background:${sc}">${d.score.toFixed(1)}</div>
+          <div class="vc-score-info">
+            <div class="vc-score-label">Overall Score</div>
+            <div class="vc-risk-badge" style="color:${sc}">${d.riskLevel}</div>
+            <div class="score-bar-bg"><div class="score-bar-fill" style="width:${barW}%;background:${sc}"></div></div>
+          </div>
+        </div>
+        <div class="vc-footer">
+          <div class="vc-date">${fmtDate(d.submissionDate)}</div>
+          ${approvalBadge(d.approvalStatus)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.vendor-card').forEach(card => {
+    card.addEventListener('click', function() {
+      openModal(parseInt(this.getAttribute('data-idx')), 'vendor');
+    });
+  });
+}
+
+// ── DETAIL TABLE ──────────────────────────────────────────────────────────────
+function filterTable() {
+  const s = document.getElementById('tblSearch').value.toLowerCase();
+  const r = document.getElementById('tblRisk').value;
+  const dept = document.getElementById('tblDept').value;
+
+  filteredTable = allData.filter(d => {
+    if (d.status === 'Archived') return false;
+    if (s && !(d.vendorName+d.contactName+d.department+d.contactEmail).toLowerCase().includes(s)) return false;
+    if (r && d.riskLevel !== r) return false;
+    if (dept && d.department !== dept) return false;
+    return true;
+  });
+
+  tblPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const s = (tblPage-1)*TBL_PAGE;
+  const pg = filteredTable.slice(s, s+TBL_PAGE);
+  document.getElementById('tblCount').textContent = filteredTable.length + ' vendors';
+  document.getElementById('tblPageInfo').textContent = `Page ${tblPage} of ${Math.ceil(filteredTable.length/TBL_PAGE)||1}`;
+  document.getElementById('tblShowCnt').textContent = `${s+1}–${Math.min(s+TBL_PAGE,filteredTable.length)} of ${filteredTable.length}`;
+  document.getElementById('tblPrev').disabled = tblPage===1;
+  document.getElementById('tblNext').disabled = s+TBL_PAGE>=filteredTable.length;
+
+  const tbody = document.getElementById('mainTable');
+  if (!pg.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No vendors match</td></tr>'; return; }
+  tbody.innerHTML = pg.map((d, i) => `
+    <tr style="cursor:pointer" onclick="openModal(${s+i}, 'table')">
+      <td><div style="font-weight:600">${d.vendorName}</div></td>
+      <td><div>${d.contactName}</div><div style="font-size:11px;color:var(--muted)">${d.contactEmail}</div></td>
+      <td style="font-size:12px">${d.department}</td>
+      <td>${scoreCell(d.score)}</td>
+      <td>${riskBadge(d.riskLevel)}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtDate(d.submissionDate)}</td>
+      <td>${approvalBadge(d.approvalStatus)}</td>
+      <td onclick="event.stopPropagation()">${actionBtns(d, s+i, 'table')}</td>
+    </tr>`).join('');
+}
+
+function chgPage(dir) { tblPage += dir; renderTable(); }
+
+// ── ARCHIVED TABLE ────────────────────────────────────────────────────────────
+function renderArchivedTable() {
+  const archived = allData.filter(d => d.status === 'Archived');
+  const tbody = document.getElementById('archivedTable');
+  if (!archived.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No archived vendors</td></tr>'; return; }
+  tbody.innerHTML = archived.map((d, i) => `
+    <tr>
+      <td style="font-weight:600">${d.vendorName}</td>
+      <td>${d.contactName}</td>
+      <td style="font-size:12px">${d.department}</td>
+      <td>${scoreCell(d.score)}</td>
+      <td>${riskBadge(d.riskLevel)}</td>
+      <td style="font-size:12px;color:var(--muted)">${fmtDate(d.submissionDate)}</td>
+      <td style="font-size:12px;color:var(--muted)">${d.archivedDate ? fmtDate(d.archivedDate) : '—'}</td>
+      <td><button class="btn btn-green btn-sm" onclick="restoreVendor(${i})">Restore</button></td>
+    </tr>`).join('');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+let currentModalIdx = null;
+let currentModalSource = null;
+
+function openModal(idx, source) {
+  const data = source === 'vendor' ? filteredVendors : source === 'recent' ? allData.filter(d=>d.status!=='Archived').sort((a,b)=>new Date(b.submissionDate)-new Date(a.submissionDate)).slice(0,8) : filteredTable;
+  const d = data[idx];
+  if (!d) return;
+
+  currentModalIdx = idx;
+  currentModalSource = source;
+
+  const sc = scoreColor(d.score);
+  const barW = Math.min(100,(d.score/5)*100).toFixed(0);
+
+  document.getElementById('modalTitle').textContent = d.vendorName;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <h4>Score &amp; Risk Assessment</h4>
+      <div class="score-section" style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div class="score-big" style="color:${sc}">${d.score.toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">out of 5.00</div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:16px;font-weight:700;color:${sc};margin-bottom:8px">${d.riskLevel}</div>
+          <div class="score-bar-bg" style="height:12px"><div class="score-bar-fill" style="width:${barW}%;background:${sc};height:12px"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px"><span>0</span><span>5.0</span></div>
+        </div>
+        <div>${approvalBadge(d.approvalStatus)}</div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <h4>Vendor Information</h4>
+      <div class="info-grid">
+        <div class="info-item"><label>Vendor Name</label><div class="ival">${d.vendorName}</div></div>
+        <div class="info-item"><label>Contact Name</label><div class="ival">${d.contactName}</div></div>
+        <div class="info-item"><label>Contact Email</label><div class="ival"><a href="mailto:${d.contactEmail}" style="color:#1F5C99">${d.contactEmail}</a></div></div>
+        <div class="info-item"><label>Department Requesting</label><div class="ival">${d.department}</div></div>
+        <div class="info-item"><label>Submission Date</label><div class="ival">${fmtDate(d.submissionDate)}</div></div>
+        <div class="info-item"><label>Status</label><div class="ival">${d.status}</div></div>
+      </div>
+    </div>
+    ${d.assessmentData ? `<div class="modal-section"><h4>Assessment Summary</h4><div style="background:var(--bg);border-radius:8px;padding:1rem;font-size:13px;line-height:1.6;color:var(--text)">${d.assessmentData}</div></div>` : ''}
+    <div class="modal-section">
+      <h4>Approval Decision</h4>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Current status: ${approvalBadge(d.approvalStatus)}</div>
+      <div class="action-row">
+        <button class="btn btn-green" onclick="setApproval('Approved')">&#x2714; Approve Vendor</button>
+        <button class="btn btn-red" onclick="setApproval('Rejected')">&#x2716; Reject Vendor</button>
+        <button class="btn btn-outline" onclick="setApproval('Under Review')">&#x1F50D; Mark Under Review</button>
+        <button class="btn btn-yellow" onclick="archiveVendorModal()">&#x1F4E6; Archive</button>
+      </div>
+    </div>`;
+
+  document.getElementById('detailOverlay').classList.add('show');
+}
+
+function setApproval(status) {
+  const data = currentModalSource === 'vendor' ? filteredVendors : currentModalSource === 'recent' ? allData.filter(d=>d.status!=='Archived').sort((a,b)=>new Date(b.submissionDate)-new Date(a.submissionDate)).slice(0,8) : filteredTable;
+  const d = data[currentModalIdx];
+  if (!d) return;
+  const vendor = allData.find(x => x.id === d.id || x.vendorName === d.vendorName);
+  if (vendor) vendor.approvalStatus = status;
+  closeModalBtn();
+  updateMetrics();
+  buildCharts();
+  renderRecentTable();
+  filterVendors();
+  filterTable();
+  showNotif(`✅ ${d.vendorName} marked as ${status}`, status === 'Approved' ? 'green' : status === 'Rejected' ? 'red' : 'blue');
+}
+
+function archiveVendorModal() {
+  const data = currentModalSource === 'vendor' ? filteredVendors : currentModalSource === 'recent' ? allData.filter(d=>d.status!=='Archived').sort((a,b)=>new Date(b.submissionDate)-new Date(a.submissionDate)).slice(0,8) : filteredTable;
+  const d = data[currentModalIdx];
+  if (!d || !confirm(`Archive ${d.vendorName}?`)) return;
+  const vendor = allData.find(x => x.id === d.id || x.vendorName === d.vendorName);
+  if (vendor) { vendor.status = 'Archived'; vendor.archivedDate = new Date().toISOString(); }
+  closeModalBtn();
+  updateMetrics();
+  buildCharts();
+  renderRecentTable();
+  filterVendors();
+  filterTable();
+  renderArchivedTable();
+  showNotif(`📦 ${d.vendorName} archived`, 'blue');
+}
+
+function closeModal(e) { if (e.target === document.getElementById('detailOverlay')) closeModalBtn(); }
+function closeModalBtn() { document.getElementById('detailOverlay').classList.remove('show'); }
+
+function actionBtns(d, i, source) {
+  return `<div style="display:flex;gap:6px">
+    <button class="btn btn-green btn-sm" onclick="quickApprove(event,'${d.vendorName}')">&#x2714;</button>
+    <button class="btn btn-red btn-sm" onclick="quickReject(event,'${d.vendorName}')">&#x2716;</button>
+  </div>`;
+}
+
+function quickApprove(e, name) {
+  e.stopPropagation();
+  const v = allData.find(d => d.vendorName === name);
+  if (v) v.approvalStatus = 'Approved';
+  updateMetrics(); buildCharts(); renderRecentTable(); filterVendors(); filterTable();
+  showNotif(`✅ ${name} approved`, 'green');
+}
+
+function quickReject(e, name) {
+  e.stopPropagation();
+  const v = allData.find(d => d.vendorName === name);
+  if (v) v.approvalStatus = 'Rejected';
+  updateMetrics(); buildCharts(); renderRecentTable(); filterVendors(); filterTable();
+  showNotif(`❌ ${name} rejected`, 'red');
+}
+
+function restoreVendor(i) {
+  const archived = allData.filter(d => d.status === 'Archived');
+  const v = archived[i];
+  if (!v) return;
+  const vendor = allData.find(d => d.vendorName === v.vendorName);
+  if (vendor) { vendor.status = 'Active'; vendor.archivedDate = ''; }
+  updateMetrics(); buildCharts(); renderRecentTable(); filterVendors(); filterTable(); renderArchivedTable();
+  showNotif(`✅ ${v.vendorName} restored`, 'green');
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function scoreColor(s) { return s>=4.5?'#228B22':s>=3.5?'#2E7D9B':s>=2.5?'#F9A825':s>=1.5?'#E65100':'#C62828'; }
+
+function scoreCell(s) {
+  const c = scoreColor(s);
+  const bw = Math.min(100,(s/5)*100).toFixed(0);
+  return `<div style="display:flex;align-items:center;gap:8px">
+    <div style="background:#E5E7EB;border-radius:3px;height:6px;width:60px"><div style="height:6px;border-radius:3px;width:${bw}%;background:${c}"></div></div>
+    <span style="font-size:13px;font-weight:700;color:${c}">${s.toFixed(1)}</span>
+  </div>`;
+}
+
+function riskBadge(r) {
+  const c = {'Critical Risk':'b-critical','High Risk':'b-high','Medium Risk':'b-medium','Low Risk':'b-low','Minimal Risk':'b-minimal'}[r]||'b-low';
+  return `<span class="badge ${c}">${r||'—'}</span>`;
+}
+
+function approvalBadge(a) {
+  const c = {'Approved':'b-approved','Rejected':'b-rejected','Pending Review':'b-pending','Under Review':'b-review'}[a]||'b-pending';
+  return `<span class="badge ${c}">${a||'Pending'}</span>`;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function showView(v, btn) {
+  ['summary','vendors','table','archived'].forEach(id => {
+    document.getElementById('view-'+id).style.display='none';
+  });
+  document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-'+v).style.display='block';
+  btn.classList.add('active');
+  if (v==='vendors') filterVendors();
+  if (v==='table') filterTable();
+  if (v==='archived') renderArchivedTable();
+}
+
+function exportCSV() {
+  const active = allData.filter(d=>d.status!=='Archived');
+  let csv = 'Vendor Name,Contact Name,Contact Email,Department,Score,Risk Level,Approval Status,Submission Date\n';
+  active.forEach(d => {
+    const e = s => '"'+String(s||'').replace(/"/g,'""')+'"';
+    csv += [e(d.vendorName),e(d.contactName),e(d.contactEmail),e(d.department),d.score.toFixed(2),e(d.riskLevel),e(d.approvalStatus),e(d.submissionDate)].join(',') + '\n';
+  });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'midland_ai_vendor_assessments.csv';
+  a.click();
+}
+
+function showNotif(msg, type) {
+  const n = document.createElement('div');
+  n.className = `notif notif-${type}`;
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 4000);
+}
+</script>
+</body>
+</html>
