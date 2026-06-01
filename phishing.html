@@ -503,8 +503,7 @@ function handleUpload(input) {
     try {
       var rows=[];
       if (file.name.endsWith('.csv')) {
-        var lines=e.target.result.split('
-').filter(function(l){return l.trim();});
+        var lines=e.target.result.split('\n').filter(function(l){return l.trim();});
         var headers=lines[0].split(',').map(function(h){return h.replace(/"/g,'').trim();});
         rows=lines.slice(1).map(function(line){
           var vals=line.match(/(".*?"|[^,]+)(?=,|$)/g)||[];
