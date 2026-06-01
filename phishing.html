@@ -90,7 +90,9 @@ footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border
 </div>
 
 <div class="metrics">
-  <div class="metric n metric-click" onclick="filterMetric('all',this)"><label>Total simulated</label><div class="val" id="mTotal">2781</div><div class="sub">click to view all</div></div>
+  <div class="metric n metric-click" onclick="filterMetric('all',this)"><label>Team Total</label><div class="val" id="mTotal">2781</div><div class="sub">all simulated</div></div>
+  <div class="metric n metric-click" onclick="filterMetric('sent',this)"><label>Sent Only</label><div class="val" id="mSent" style="color:var(--muted)">1804</div><div class="sub">not opened</div></div>
+  <div class="metric b metric-click" onclick="filterMetric('seen',this)"><label>Seen Total</label><div class="val" id="mSeen">977</div><div class="sub">team total &minus; sent</div></div>
   <div class="metric r metric-click" onclick="filterMetric('failed',this)"><label>Failed</label><div class="val" id="mFailed">159</div><div class="sub">5.7% &mdash; click to view</div></div>
   <div class="metric a metric-click" onclick="filterMetric('credential',this)"><label>Credential exposed</label><div class="val" id="mCred">20</div><div class="sub">click to view</div></div>
   <div class="metric g metric-click" onclick="filterMetric('reported',this)"><label>Reported phish</label><div class="val" id="mReported">413</div><div class="sub">14.9% &mdash; click to view</div></div>
@@ -150,12 +152,13 @@ footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border
     <select id="empMgr" onchange="filterEmps()"><option value="">All managers</option></select>
     <select id="empStatus" onchange="filterEmps()">
       <option value="">All statuses</option>
+      <option value="seen_total">Seen (all engaged)</option>
       <option value="Simulation Failed">Failed</option>
       <option value="Credential Page Opened">Credential exposed</option>
       <option value="Simulation Reported">Reported</option>
       <option value="Training Completed">Training done</option>
       <option value="Simulation Email Opened">Opened only</option>
-      <option value="Simulation Sent">Not opened</option>
+      <option value="Simulation Sent">Sent only (not opened)</option>
     </select>
     <select id="empRisk" onchange="filterEmps()">
       <option value="">All risk levels</option>
@@ -263,12 +266,14 @@ function filterMetric(type, el) {
   document.getElementById('empRisk').value = '';
   var st = document.getElementById('empStatus');
   if (type === 'all') st.value = '';
+  else if (type === 'sent') st.value = 'Simulation Sent';
+  else if (type === 'seen') st.value = 'seen_total';
   else if (type === 'failed') st.value = 'Simulation Failed';
   else if (type === 'credential') st.value = 'Credential Page Opened';
   else if (type === 'reported') st.value = 'Simulation Reported';
   else if (type === 'training') st.value = 'Training Completed';
   filterEmps();
-  var msgs = {all:'Showing all employees',failed:'Showing failed employees',credential:'Showing credential exposures',reported:'Showing employees who reported',training:'Showing training completions'};
+  var msgs = {all:'Showing all employees',sent:'Showing sent only (not opened)',seen:'Showing seen total (engaged)',failed:'Showing failed employees',credential:'Showing credential exposures',reported:'Showing employees who reported',training:'Showing training completions'};
   showNotif(msgs[type]||'', type === 'failed' || type === 'credential' ? 'red' : 'blue');
 }
 
@@ -421,7 +426,8 @@ function filterEmps() {
   fEmps = EMPS.filter(function(e) {
     if (s && (e.name+e.email+e.department+e.manager).toLowerCase().indexOf(s) < 0) return false;
     if (mg && e.manager !== mg) return false;
-    if (st && e.status !== st) return false;
+    if (st === 'seen_total') { if (e.status === 'Simulation Sent') return false; }
+    else if (st && e.status !== st) return false;
     if (ri && e.risk !== ri) return false;
     return true;
   });
@@ -626,7 +632,11 @@ function processUpload(rows) {
   var tr2 = newEmps.reduce(function(s,e){return s+e.reported;},0);
   var tt2 = newEmps.reduce(function(s,e){return s+e.training;},0);
   var tc2 = newEmps.reduce(function(s,e){return s+e.credential;},0);
+  var sentOnly2 = newEmps.filter(function(e){return e.status==='Simulation Sent';}).length;
+  var seen2 = rows.length - sentOnly2;
   document.getElementById('mTotal').textContent = rows.length.toLocaleString();
+  document.getElementById('mSent').textContent = sentOnly2;
+  document.getElementById('mSeen').textContent = seen2;
   document.getElementById('mFailed').textContent = tf2;
   document.getElementById('mCred').textContent = tc2;
   document.getElementById('mReported').textContent = tr2;
