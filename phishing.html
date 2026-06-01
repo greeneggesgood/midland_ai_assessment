@@ -93,7 +93,8 @@ footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border
   <div class="metric n metric-click" onclick="filterMetric('all',this)"><label>Team Total</label><div class="val" id="mTotal">2781</div><div class="sub">all simulated</div></div>
   <div class="metric n metric-click" onclick="filterMetric('sent',this)"><label>Sent Only</label><div class="val" id="mSent" style="color:var(--muted)">1804</div><div class="sub">not opened</div></div>
   <div class="metric b metric-click" onclick="filterMetric('seen',this)"><label>Seen Total</label><div class="val" id="mSeen">977</div><div class="sub">team total &minus; sent</div></div>
-  <div class="metric r metric-click" onclick="filterMetric('failed',this)"><label>Failed</label><div class="val" id="mFailed">159</div><div class="sub">5.7% &mdash; click to view</div></div>
+  <div class="metric r metric-click" onclick="filterMetric('failed',this)"><label>Failed</label><div class="val" id="mFailed">159</div><div class="sub">still outstanding</div></div>
+  <div class="metric r metric-click" onclick="filterMetric('everfailed',this)" style="border-top-color:#8B0000"><label>Ever Failed</label><div class="val" id="mEverFailed" style="color:#8B0000">337</div><div class="sub">incl. trained</div></div>
   <div class="metric a metric-click" onclick="filterMetric('credential',this)"><label>Credential exposed</label><div class="val" id="mCred">20</div><div class="sub">click to view</div></div>
   <div class="metric g metric-click" onclick="filterMetric('reported',this)"><label>Reported phish</label><div class="val" id="mReported">413</div><div class="sub">14.9% &mdash; click to view</div></div>
   <div class="metric b metric-click" onclick="filterMetric('training',this)"><label>Training done</label><div class="val" id="mTraining">178</div><div class="sub">click to view</div></div>
@@ -153,6 +154,7 @@ footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border
     <select id="empStatus" onchange="filterEmps()">
       <option value="">All statuses</option>
       <option value="seen_total">Seen (all engaged)</option>
+      <option value="ever_failed">Ever Failed (incl. trained)</option>
       <option value="Simulation Failed">Failed</option>
       <option value="Credential Page Opened">Credential exposed</option>
       <option value="Simulation Reported">Reported</option>
@@ -269,11 +271,12 @@ function filterMetric(type, el) {
   else if (type === 'sent') st.value = 'Simulation Sent';
   else if (type === 'seen') st.value = 'seen_total';
   else if (type === 'failed') st.value = 'Simulation Failed';
+  else if (type === 'everfailed') st.value = 'ever_failed';
   else if (type === 'credential') st.value = 'Credential Page Opened';
   else if (type === 'reported') st.value = 'Simulation Reported';
   else if (type === 'training') st.value = 'Training Completed';
   filterEmps();
-  var msgs = {all:'Showing all employees',sent:'Showing sent only (not opened)',seen:'Showing seen total (engaged)',failed:'Showing failed employees',credential:'Showing credential exposures',reported:'Showing employees who reported',training:'Showing training completions'};
+  var msgs = {all:'Showing all employees',sent:'Showing sent only (not opened)',seen:'Showing seen total (engaged)',failed:'Showing failed employees',everfailed:'Showing all who ever failed (including trained)',credential:'Showing credential exposures',reported:'Showing employees who reported',training:'Showing training completions'};
   showNotif(msgs[type]||'', type === 'failed' || type === 'credential' ? 'red' : 'blue');
 }
 
@@ -427,6 +430,7 @@ function filterEmps() {
     if (s && (e.name+e.email+e.department+e.manager).toLowerCase().indexOf(s) < 0) return false;
     if (mg && e.manager !== mg) return false;
     if (st === 'seen_total') { if (e.status === 'Simulation Sent') return false; }
+    else if (st === 'ever_failed') { if (e.failed !== 1 && e.training !== 1) return false; }
     else if (st && e.status !== st) return false;
     if (ri && e.risk !== ri) return false;
     return true;
@@ -634,9 +638,11 @@ function processUpload(rows) {
   var tc2 = newEmps.reduce(function(s,e){return s+e.credential;},0);
   var sentOnly2 = newEmps.filter(function(e){return e.status==='Simulation Sent';}).length;
   var seen2 = rows.length - sentOnly2;
+  var everFailed2 = newEmps.filter(function(e){return e.failed===1||e.training===1;}).length;
   document.getElementById('mTotal').textContent = rows.length.toLocaleString();
   document.getElementById('mSent').textContent = sentOnly2;
   document.getElementById('mSeen').textContent = seen2;
+  if (document.getElementById('mEverFailed')) document.getElementById('mEverFailed').textContent = everFailed2;
   document.getElementById('mFailed').textContent = tf2;
   document.getElementById('mCred').textContent = tc2;
   document.getElementById('mReported').textContent = tr2;
