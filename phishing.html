@@ -458,7 +458,7 @@ function renderEmps() {
 function chgPage(d) { ePage+=d; renderEmps(); }
 
 function renderTrainingMetrics() {
-  var failed=EMPS.filter(function(e){return e.failed===1||e.credential===1;});
+  var failed=getBaseEmps().filter(function(e){return e.failed===1||e.credential===1;});
   var trained=failed.filter(function(e){return e.training===1;});
   var notTrained=failed.filter(function(e){return e.training===0;});
   var credNoTrain=EMPS.filter(function(e){return e.credential===1&&e.training===0;});
@@ -477,7 +477,7 @@ function filterTraining() {
   var s=document.getElementById('trainSearch').value.toLowerCase();
   var st=document.getElementById('trainStatus').value;
   var mg=document.getElementById('trainMgr').value;
-  var base=EMPS.filter(function(e){return e.failed===1||e.credential===1||e.training===1;});
+  var base=getBaseEmps().filter(function(e){return e.failed===1||e.credential===1||e.training===1;});
   fTraining=base.filter(function(e) {
     if (s&&(e.name+e.email+e.manager+e.department).toLowerCase().indexOf(s)<0) return false;
     if (mg&&e.manager!==mg) return false;
