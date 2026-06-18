@@ -90,6 +90,11 @@ footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border
     <button class="vbtn" onclick="showView('employees',this)">Employee Detail</button>
     <button class="vbtn" onclick="showView('training',this)">&#x1F393; Training</button>
   </div>
+  <div class="view-toggle" id="domainToggle">
+    <button class="vbtn active" onclick="setDomain('all',this)">All Users</button>
+    <button class="vbtn" onclick="setDomain('mh',this)">Midland Health</button>
+    <button class="vbtn" onclick="setDomain('pb',this)">Permian Behavioral</button>
+</div>
   <div style="display:flex;gap:8px;align-items:center">
     <label class="upload-btn">
       &#x1F4C2; Upload New Data
