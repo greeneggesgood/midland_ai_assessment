@@ -372,7 +372,7 @@ function filterMgrs() {
   var s=document.getElementById('mgrSearch').value.toLowerCase();
   var f=document.getElementById('mgrFilter').value;
   var so=document.getElementById('mgrSort').value;
-  fMgrs = MGRS.filter(function(m) {
+  fMgrs = getMgrsForDomain().filter(function(m) {
     if (m.Manager==='Unassigned') return false;
     if (s && m.Manager.toLowerCase().indexOf(s)<0) return false;
     if (f==='failed' && m.Failed===0) return false;
@@ -430,7 +430,7 @@ function filterEmps() {
   var mg=document.getElementById('empMgr').value;
   var st=document.getElementById('empStatus').value;
   var ri=document.getElementById('empRisk').value;
-  fEmps=EMPS.filter(function(e) {
+  fEmps=getBaseEmps().filter(function(e) {
     if (s&&(e.name+e.email+e.department+e.manager).toLowerCase().indexOf(s)<0) return false;
     if (mg&&e.manager!==mg) return false;
     if (st==='seen_total') { if (e.status==='Simulation Sent') return false; }
